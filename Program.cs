@@ -2,18 +2,16 @@ using InmobiliariaCC2.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Registramos los repositorios para poder utilizarlos
-// posteriormente mediante inyección de dependencias.
 builder.Services.AddScoped<RepositorioPropietario>();
 builder.Services.AddScoped<RepositorioReserva>();
 builder.Services.AddScoped<RepositorioTipoInmueble>();
+builder.Services.AddScoped<RepositorioInmueble>();
+builder.Services.AddScoped<RepositorioInquilino>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
