@@ -1,0 +1,24 @@
+@model InmobiliariaCC2.Models.Inquilino
+
+@{
+    ViewData["Title"] = "Detalle del Inquilino";
+}
+
+<h2>Detalle del Inquilino</h2>
+
+<div class="card col-md-6 mb-3">
+    <div class="card-body">
+        <p><strong>ID:</strong> @Model.IdInquilino</p>
+        <p><strong>DNI:</strong> @Model.Dni</p>
+        <p><strong>Nombre:</strong> @Model.Nombre</p>
+        <p><strong>Apellido:</strong> @Model.Apellido</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Teléfono:</strong> @Model.Telefono</p>
+        <p><strong>Estado:</strong> @(Model.Estado ? "Activo" : "Inactivo")</p>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.IdInquilino" class="btn btn-warning">Editar</a>
+    <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
+</div>

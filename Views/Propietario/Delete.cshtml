@@ -1,0 +1,31 @@
+@model InmobiliariaCC2.Models.Propietario
+
+@{
+    ViewData["Title"] = "Eliminar Propietario";
+}
+
+<h2>Eliminar Propietario</h2>
+
+<p class="text-danger">¿Está seguro de que desea dar de baja a este propietario?</p>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">DNI</dt>
+        <dd class="col-sm-10">@Model.Dni</dd>
+
+        <dt class="col-sm-2">Nombre</dt>
+        <dd class="col-sm-10">@Model.Nombre @Model.Apellido</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Teléfono</dt>
+        <dd class="col-sm-10">@Model.Telefono</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="IdPropietario" />
+        <button type="submit" class="btn btn-danger">Confirmar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
