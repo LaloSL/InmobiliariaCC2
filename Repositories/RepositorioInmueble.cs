@@ -9,141 +9,294 @@ namespace InmobiliariaCC2.Repositories
 
         public RepositorioInmueble(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+            _connectionString = configuration.GetConnectionString("CadenaSQL")
+                ?? throw new InvalidOperationException(
+                    "No se encontró la cadena de conexión CadenaSQL."
+                );
         }
 
         public List<Inmueble> ObtenerTodos()
         {
             var lista = new List<Inmueble>();
+
             using (var connection = new MySqlConnection(_connectionString))
             {
-                var sql = @"SELECT i.id_inmueble, i.direccion, i.cupo, i.coordenadas, i.precio_dia, i.estado,
-                                   t.id_tipo, t.nombre AS tipo_nombre,
-                                   p.id_propietario, p.nombre AS prop_nombre, p.apellido AS prop_apellido
-                            FROM inmuebles i
-                            INNER JOIN tipos_inmueble t ON i.id_tipo = t.id_tipo
-                            INNER JOIN propietarios p ON i.id_propietario = p.id_propietario
-                            WHERE i.estado = 1";
+                var sql = @"SELECT
+                                i.IdInmueble,
+                                i.Direccion,
+                                i.Cupo,
+                                i.Coordenadas,
+                                i.PrecioDia,
+                                i.Estado,
+                                t.IdTipo,
+                                t.Nombre AS TipoNombre,
+                                p.IdPropietario,
+                                p.Nombre AS PropietarioNombre,
+                                p.Apellido AS PropietarioApellido
+                            FROM Inmueble i
+                            INNER JOIN TipoInmueble t
+                                ON i.IdTipo = t.IdTipo
+                            INNER JOIN Propietario p
+                                ON i.IdPropietario = p.IdPropietario
+                            WHERE i.Estado = 1;";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
                     connection.Open();
+
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             lista.Add(new Inmueble
                             {
-                                IdInmueble = reader.GetInt32("id_inmueble"),
-                                Direccion = reader.GetString("direccion"),
-                                Cupo = reader.GetInt32("cupo"),
-                                Coordenadas = reader.IsDBNull(reader.GetOrdinal("coordenadas")) ? null : reader.GetString("coordenadas"),
-                                PrecioDia = reader.GetDecimal("precio_dia"),
-                                Estado = reader.GetBoolean("estado"),
-                                IdTipo = reader.GetInt32("id_tipo"),
-                                Tipo = new TipoInmueble { IdTipo = reader.GetInt32("id_tipo"), Nombre = reader.GetString("tipo_nombre") },
-                                IdPropietario = reader.GetInt32("id_propietario"),
-                                Propietario = new Propietario { IdPropietario = reader.GetInt32("id_propietario"), Nombre = reader.GetString("prop_nombre"), Apellido = reader.GetString("prop_apellido") }
+                                IdInmueble = reader.GetInt32("IdInmueble"),
+                                Direccion = reader.GetString("Direccion"),
+                                Cupo = reader.GetInt32("Cupo"),
+
+                                Coordenadas = reader.IsDBNull(
+                                    reader.GetOrdinal("Coordenadas"))
+                                    ? null
+                                    : reader.GetString("Coordenadas"),
+
+                                PrecioDia = reader.GetDecimal("PrecioDia"),
+                                Estado = reader.GetBoolean("Estado"),
+
+                                IdTipo = reader.GetInt32("IdTipo"),
+
+                                Tipo = new TipoInmueble
+                                {
+                                    IdTipo = reader.GetInt32("IdTipo"),
+                                    Nombre = reader.GetString("TipoNombre")
+                                },
+
+                                IdPropietario =
+                                    reader.GetInt32("IdPropietario"),
+
+                                Propietario = new Propietario
+                                {
+                                    IdPropietario =
+                                        reader.GetInt32("IdPropietario"),
+
+                                    Nombre =
+                                        reader.GetString("PropietarioNombre"),
+
+                                    Apellido =
+                                        reader.GetString("PropietarioApellido")
+                                }
                             });
                         }
                     }
                 }
             }
+
             return lista;
         }
 
         public Inmueble? ObtenerPorId(int id)
         {
             Inmueble? inmueble = null;
+
             using (var connection = new MySqlConnection(_connectionString))
             {
-                var sql = @"SELECT i.id_inmueble, i.direccion, i.cupo, i.coordenadas, i.precio_dia, i.estado, i.id_tipo, i.id_propietario,
-                                   t.nombre AS tipo_nombre,
-                                   p.nombre AS prop_nombre, p.apellido AS prop_apellido, p.email AS prop_email
-                            FROM inmuebles i
-                            INNER JOIN tipos_inmueble t ON i.id_tipo = t.id_tipo
-                            INNER JOIN propietarios p ON i.id_propietario = p.id_propietario
-                            WHERE i.id_inmueble = @id";
+                var sql = @"SELECT
+                                i.IdInmueble,
+                                i.Direccion,
+                                i.Cupo,
+                                i.Coordenadas,
+                                i.PrecioDia,
+                                i.Estado,
+                                i.IdTipo,
+                                i.IdPropietario,
+                                t.Nombre AS TipoNombre,
+                                p.Nombre AS PropietarioNombre,
+                                p.Apellido AS PropietarioApellido,
+                                p.Email AS PropietarioEmail
+                            FROM Inmueble i
+                            INNER JOIN TipoInmueble t
+                                ON i.IdTipo = t.IdTipo
+                            INNER JOIN Propietario p
+                                ON i.IdPropietario = p.IdPropietario
+                            WHERE i.IdInmueble = @id;";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
+
                     connection.Open();
+
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
                             inmueble = new Inmueble
                             {
-                                IdInmueble = reader.GetInt32("id_inmueble"),
-                                Direccion = reader.GetString("direccion"),
-                                Cupo = reader.GetInt32("cupo"),
-                                Coordenadas = reader.IsDBNull(reader.GetOrdinal("coordenadas")) ? null : reader.GetString("coordenadas"),
-                                PrecioDia = reader.GetDecimal("precio_dia"),
-                                Estado = reader.GetBoolean("estado"),
-                                IdTipo = reader.GetInt32("id_tipo"),
-                                Tipo = new TipoInmueble { IdTipo = reader.GetInt32("id_tipo"), Nombre = reader.GetString("tipo_nombre") },
-                                IdPropietario = reader.GetInt32("id_propietario"),
+                                IdInmueble =
+                                    reader.GetInt32("IdInmueble"),
+
+                                Direccion =
+                                    reader.GetString("Direccion"),
+
+                                Cupo =
+                                    reader.GetInt32("Cupo"),
+
+                                Coordenadas = reader.IsDBNull(
+                                    reader.GetOrdinal("Coordenadas"))
+                                    ? null
+                                    : reader.GetString("Coordenadas"),
+
+                                PrecioDia =
+                                    reader.GetDecimal("PrecioDia"),
+
+                                Estado =
+                                    reader.GetBoolean("Estado"),
+
+                                IdTipo =
+                                    reader.GetInt32("IdTipo"),
+
+                                Tipo = new TipoInmueble
+                                {
+                                    IdTipo =
+                                        reader.GetInt32("IdTipo"),
+
+                                    Nombre =
+                                        reader.GetString("TipoNombre")
+                                },
+
+                                IdPropietario =
+                                    reader.GetInt32("IdPropietario"),
+
                                 Propietario = new Propietario
                                 {
-                                    IdPropietario = reader.GetInt32("id_propietario"),
-                                    Nombre = reader.GetString("prop_nombre"),
-                                    Apellido = reader.GetString("prop_apellido"),
-                                    Email = reader.GetString("prop_email")
+                                    IdPropietario =
+                                        reader.GetInt32("IdPropietario"),
+
+                                    Nombre =
+                                        reader.GetString("PropietarioNombre"),
+
+                                    Apellido =
+                                        reader.GetString("PropietarioApellido"),
+
+                                    Email =
+                                        reader.GetString("PropietarioEmail")
                                 }
                             };
                         }
                     }
                 }
             }
+
             return inmueble;
         }
 
-        public int Guardar(Inmueble i)
+        public int Guardar(Inmueble inmueble)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
-                var sql = @"INSERT INTO inmuebles (direccion, cupo, id_tipo, coordenadas, precio_dia, id_propietario) 
-                            VALUES (@direccion, @cupo, @idTipo, @coordenadas, @precioDia, @idPropietario);";
+                var sql = @"INSERT INTO Inmueble
+                                (
+                                    Direccion,
+                                    Cupo,
+                                    IdTipo,
+                                    Coordenadas,
+                                    PrecioDia,
+                                    IdPropietario
+                                )
+                            VALUES
+                                (
+                                    @direccion,
+                                    @cupo,
+                                    @idTipo,
+                                    @coordenadas,
+                                    @precioDia,
+                                    @idPropietario
+                                );";
+
                 using (var command = new MySqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@direccion", i.Direccion);
-                    command.Parameters.AddWithValue("@cupo", i.Cupo);
-                    command.Parameters.AddWithValue("@idTipo", i.IdTipo);
-                    command.Parameters.AddWithValue("@coordenadas", (object?)i.Coordenadas ?? DBNull.Value);
-                    command.Parameters.AddWithValue("@precioDia", i.PrecioDia);
-                    command.Parameters.AddWithValue("@idPropietario", i.IdPropietario);
+                    command.Parameters.AddWithValue(
+                        "@direccion",
+                        inmueble.Direccion
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@cupo",
+                        inmueble.Cupo
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idTipo",
+                        inmueble.IdTipo
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@coordenadas",
+                        (object?)inmueble.Coordenadas ?? DBNull.Value
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@precioDia",
+                        inmueble.PrecioDia
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idPropietario",
+                        inmueble.IdPropietario
+                    );
 
                     connection.Open();
+
                     return command.ExecuteNonQuery();
                 }
             }
         }
 
-        public List<Inmueble> BuscarDisponibles(DateTime desde, DateTime hasta)
+        public List<Inmueble> BuscarDisponibles(
+            DateTime desde,
+            DateTime hasta)
         {
             var lista = new List<Inmueble>();
+
             using (var connection = new MySqlConnection(_connectionString))
             {
-
-                var sql = @"SELECT i.id_inmueble, i.direccion, i.cupo, i.coordenadas, i.precio_dia,
-                           t.nombre AS tipo_nombre,
-                           p.nombre AS prop_nombre, p.apellido AS prop_apellido
-                    FROM inmuebles i
-                    INNER JOIN tipos_inmueble t ON i.id_tipo = t.id_tipo
-                    INNER JOIN propietarios p ON i.id_propietario = p.id_propietario
-                    WHERE i.estado = 1
-                      AND i.id_inmueble NOT IN (
-                          SELECT id_inmueble 
-                          FROM reservas 
-                          WHERE estado = 1 
-                            AND (fecha_desde < @hasta AND fecha_hasta > @desde)
-                      )";
+                var sql = @"SELECT
+                                i.IdInmueble,
+                                i.Direccion,
+                                i.Cupo,
+                                i.Coordenadas,
+                                i.PrecioDia,
+                                t.Nombre AS TipoNombre,
+                                p.Nombre AS PropietarioNombre,
+                                p.Apellido AS PropietarioApellido
+                            FROM Inmueble i
+                            INNER JOIN TipoInmueble t
+                                ON i.IdTipo = t.IdTipo
+                            INNER JOIN Propietario p
+                                ON i.IdPropietario = p.IdPropietario
+                            WHERE i.Estado = 1
+                              AND i.IdInmueble NOT IN
+                              (
+                                  SELECT IdInmueble
+                                  FROM Reserva
+                                  WHERE Estado = 1
+                                    AND (
+                                        FechaDesde < @hasta
+                                        AND FechaHasta > @desde
+                                    )
+                              );";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@desde", desde);
-                    command.Parameters.AddWithValue("@hasta", hasta);
+                    command.Parameters.AddWithValue(
+                        "@desde",
+                        desde
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@hasta",
+                        hasta
+                    );
+
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
@@ -152,21 +305,43 @@ namespace InmobiliariaCC2.Repositories
                         {
                             lista.Add(new Inmueble
                             {
-                                IdInmueble = reader.GetInt32("id_inmueble"),
-                                Direccion = reader.GetString("direccion"),
-                                Cupo = reader.GetInt32("cupo"),
-                                PrecioDia = reader.GetDecimal("precio_dia"),
-                                Tipo = new TipoInmueble { Nombre = reader.GetString("tipo_nombre") },
+                                IdInmueble =
+                                    reader.GetInt32("IdInmueble"),
+
+                                Direccion =
+                                    reader.GetString("Direccion"),
+
+                                Cupo =
+                                    reader.GetInt32("Cupo"),
+
+                                Coordenadas = reader.IsDBNull(
+                                    reader.GetOrdinal("Coordenadas"))
+                                    ? null
+                                    : reader.GetString("Coordenadas"),
+
+                                PrecioDia =
+                                    reader.GetDecimal("PrecioDia"),
+
+                                Tipo = new TipoInmueble
+                                {
+                                    Nombre =
+                                        reader.GetString("TipoNombre")
+                                },
+
                                 Propietario = new Propietario
                                 {
-                                    Nombre = reader.GetString("prop_nombre"),
-                                    Apellido = reader.GetString("prop_apellido")
+                                    Nombre =
+                                        reader.GetString("PropietarioNombre"),
+
+                                    Apellido =
+                                        reader.GetString("PropietarioApellido")
                                 }
                             });
                         }
                     }
                 }
             }
+
             return lista;
         }
     }
