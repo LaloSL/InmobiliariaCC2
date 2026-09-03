@@ -1,7 +1,7 @@
 using MySql.Data.MySqlClient;
-using ReservasTemporales.Models;
+using InmobiliariaCC2.Models;
 
-namespace ReservasTemporales.Repositories
+namespace InmobiliariaCC2.Repositories
 {
     public class RepositorioInmueble
     {
@@ -125,7 +125,7 @@ namespace ReservasTemporales.Repositories
             var lista = new List<Inmueble>();
             using (var connection = new MySqlConnection(_connectionString))
             {
-                
+
                 var sql = @"SELECT i.id_inmueble, i.direccion, i.cupo, i.coordenadas, i.precio_dia,
                            t.nombre AS tipo_nombre,
                            p.nombre AS prop_nombre, p.apellido AS prop_apellido
