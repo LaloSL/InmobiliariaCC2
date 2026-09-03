@@ -1,0 +1,64 @@
+@model IEnumerable<InmobiliariaCC2.Models.Inmueble>
+
+@{
+    ViewData["Title"] = "Buscar Inmuebles Disponibles";
+}
+
+<h2>Buscar Inmuebles Disponibles</h2>
+
+<form asp-action="BuscarDisponibles" method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label class="form-label">Fecha Desde</label>
+        <input type="date" name="desde" value="@ViewBag.Desde" class="form-control" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Fecha Hasta</label>
+        <input type="date" name="hasta" value="@ViewBag.Hasta" class="form-control" required />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Consultar Disponibilidad</button>
+    </div>
+</form>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+@if (Model.Any())
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Dirección</th>
+                <th>Tipo</th>
+                <th>Cupo</th>
+                <th>Precio / Día</th>
+                <th>Propietario</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Direccion</td>
+                    <td>@item.Tipo?.Nombre</td>
+                    <td>@item.Cupo personas</td>
+                    <td>$@item.PrecioDia</td>
+                    <td>@item.Propietario?.Nombre @item.Propietario?.Apellido</td>
+                    <td>
+                        <a asp-controller="Reserva" asp-action="Create" asp-route-idInmueble="@item.IdInmueble"
+                           asp-route-desde="@ViewBag.Desde" asp-route-hasta="@ViewBag.Hasta" class="btn btn-sm btn-success">
+                            Reservar
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (ViewBag.Desde != null)
+{
+    <div class="alert alert-info">No se encontraron inmuebles libres para el rango de fechas seleccionado.</div>
+}

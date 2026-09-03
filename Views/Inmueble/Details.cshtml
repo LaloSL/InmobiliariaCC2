@@ -1,0 +1,34 @@
+@model InmobiliariaCC2.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Detalle del Inmueble";
+}
+
+<h2>Detalle de Propiedad</h2>
+
+<div class="card border-info mb-3">
+    <div class="card-header bg-info text-white">
+        <strong>Inmueble: @Model.Direccion</strong>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Tipo de Propiedad</dt>
+            <dd class="col-sm-9">@Model.Tipo?.Nombre</dd>
+
+            <dt class="col-sm-3">Cupo Máximo</dt>
+            <dd class="col-sm-9">@Model.Cupo personas</dd>
+
+            <dt class="col-sm-3">Precio por Día</dt>
+            <dd class="col-sm-9">$@Model.PrecioDia</dd>
+
+            <dt class="col-sm-3">Coordenadas</dt>
+            <dd class="col-sm-9">@(Model.Coordenadas ?? "Sin registrar")</dd>
+
+            <dt class="col-sm-3">Propietario</dt>
+            <dd class="col-sm-9">@Model.Propietario?.Nombre @Model.Propietario?.Apellido (@Model.Propietario?.Email)
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
