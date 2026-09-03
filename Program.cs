@@ -1,7 +1,15 @@
+using InmobiliariaCC2.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Registramos los repositorios para poder utilizarlos
+// posteriormente mediante inyección de dependencias.
+builder.Services.AddScoped<RepositorioPropietario>();
+builder.Services.AddScoped<RepositorioReserva>();
+builder.Services.AddScoped<RepositorioTipoInmueble>();
 
 var app = builder.Build();
 
@@ -9,11 +17,11 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+
 app.UseRouting();
 
 app.UseAuthorization();
@@ -24,6 +32,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();
