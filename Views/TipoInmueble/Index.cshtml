@@ -1,4 +1,4 @@
-@model IEnumerable<ReservasTemporales.Models.TipoInmueble>
+@model IEnumerable<InmobiliariaCC2.Models.TipoInmueble>
 
 @{
     ViewData["Title"] = "Tipos de Inmueble";
@@ -37,7 +37,8 @@
                 <td>
                     <a asp-action="Details" asp-route-id="@item.IdTipo" class="btn btn-sm btn-info">Detalles</a>
                     <a asp-action="Edit" asp-route-id="@item.IdTipo" class="btn btn-sm btn-warning">Editar</a>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarTipoAsync(@item.IdTipo)">Eliminar</button>
+                    <button type="button" class="btn btn-sm btn-danger"
+                            onclick="eliminarTipoAsync(@item.IdTipo)">Eliminar</button>
                 </td>
             </tr>
         }
