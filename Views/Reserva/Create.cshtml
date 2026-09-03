@@ -12,34 +12,194 @@
 }
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-8">
+
         <form asp-action="Create" method="post">
+
             <div class="mb-3">
-                <label asp-for="IdInquilino" class="form-label">Inquilino</label>
-                <select asp-for="IdInquilino" class="form-select" asp-items="ViewBag.Inquilinos" required>
+                <label asp-for="IdInquilino" class="form-label">
+                    Inquilino
+                </label>
+
+                <select asp-for="IdInquilino"
+                        class="form-select"
+                        asp-items="ViewBag.Inquilinos"
+                        required>
                     <option value="">-- Seleccionar Inquilino --</option>
                 </select>
+
+                <span asp-validation-for="IdInquilino"
+                      class="text-danger"></span>
             </div>
 
+
             <div class="mb-3">
-                <label asp-for="IdInmueble" class="form-label">Inmueble</label>
-                <select asp-for="IdInmueble" class="form-select" asp-items="ViewBag.Inmuebles" required>
-                    <option value="">-- Seleccionar Inmueble --</option>
+                <label class="form-label">
+                    Tipo de Inmueble
+                </label>
+
+                <select id="IdTipo"
+                        name="idTipo"
+                        class="form-select"
+                        asp-items="ViewBag.Tipos"
+                        required>
+                    <option value="">-- Seleccionar Tipo --</option>
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="FechaDesde" class="form-label">Fecha Desde</label>
-                <input asp-for="FechaDesde" type="date" class="form-control" value="@ViewBag.Desde" required />
-            </div>
 
             <div class="mb-3">
-                <label asp-for="FechaHasta" class="form-label">Fecha Hasta</label>
-                <input asp-for="FechaHasta" type="date" class="form-control" value="@ViewBag.Hasta" required />
+                <label asp-for="IdInmueble" class="form-label">
+                    Inmueble
+                </label>
+
+                <select asp-for="IdInmueble"
+                        id="IdInmueble"
+                        class="form-select"
+                        asp-items="ViewBag.Inmuebles"
+                        required>
+                    <option value="">-- Seleccionar Inmueble --</option>
+                </select>
+
+                <span asp-validation-for="IdInmueble"
+                      class="text-danger"></span>
+
+                <div class="form-text">
+                    Se muestra la dirección, capacidad y precio por día del inmueble.
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-success">Confirmar Reserva</button>
-            <a asp-action="Index" class="btn btn-secondary">Volver</a>
+
+            <div class="mb-3">
+                <label asp-for="FechaDesde" class="form-label">
+                    Fecha Desde
+                </label>
+
+                <input asp-for="FechaDesde"
+                       type="date"
+                       class="form-control"
+                       required />
+
+                <span asp-validation-for="FechaDesde"
+                      class="text-danger"></span>
+            </div>
+
+
+            <div class="mb-3">
+                <label asp-for="FechaHasta" class="form-label">
+                    Fecha Hasta
+                </label>
+
+                <input asp-for="FechaHasta"
+                       type="date"
+                       class="form-control"
+                       required />
+
+                <span asp-validation-for="FechaHasta"
+                      class="text-danger"></span>
+            </div>
+
+
+            <button type="submit"
+                    class="btn btn-success">
+                Confirmar Reserva
+            </button>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+                Volver
+            </a>
+
         </form>
     </div>
 </div>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const tipoSelect = document.getElementById("IdTipo");
+        const inmuebleSelect = document.getElementById("IdInmueble");
+
+        tipoSelect.addEventListener("change", async function () {
+
+            const idTipo = this.value;
+
+            inmuebleSelect.innerHTML =
+                '<option value="">-- Seleccionar Inmueble --</option>';
+
+            if (!idTipo) {
+                return;
+            }
+
+            try {
+
+                const respuesta = await fetch(
+                    `/Reserva/ObtenerInmueblesPorTipo?idTipo=${idTipo}`
+                );
+
+                if (!respuesta.ok) {
+                    throw new Error(
+                        "No se pudieron cargar los inmuebles."
+                    );
+                }
+
+                const inmuebles = await respuesta.json();
+
+                if (inmuebles.length === 0) {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = "";
+
+                    option.textContent =
+                        "No hay inmuebles de este tipo";
+
+                    inmuebleSelect.appendChild(option);
+
+                    return;
+                }
+
+                inmuebles.forEach(inmueble => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value =
+                        inmueble.idInmueble;
+
+                    const precio = Number(inmueble.precioDia)
+                        .toLocaleString(
+                            "es-AR",
+                            {
+                                style: "currency",
+                                currency: "ARS"
+                            }
+                        );
+
+                    option.textContent =
+                        `${inmueble.direccion} | Capacidad: ${inmueble.cupo} personas | ${precio} por día`;
+
+                    inmuebleSelect.appendChild(option);
+                });
+            }
+            catch (error) {
+
+                console.error(error);
+
+                const option =
+                    document.createElement("option");
+
+                option.value = "";
+
+                option.textContent =
+                    "Error al cargar los inmuebles";
+
+                inmuebleSelect.appendChild(option);
+            }
+        });
+    </script>
+}

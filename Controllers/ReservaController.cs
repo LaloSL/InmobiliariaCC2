@@ -10,15 +10,18 @@ namespace InmobiliariaCC2.Controllers
         private readonly RepositorioReserva _repoReserva;
         private readonly RepositorioInmueble _repoInmueble;
         private readonly RepositorioInquilino _repoInquilino;
+        private readonly RepositorioTipoInmueble _repoTipoInmueble;
 
         public ReservaController(
             RepositorioReserva repoReserva,
             RepositorioInmueble repoInmueble,
-            RepositorioInquilino repoInquilino)
+            RepositorioInquilino repoInquilino,
+            RepositorioTipoInmueble repoTipoInmueble)
         {
             _repoReserva = repoReserva;
             _repoInmueble = repoInmueble;
             _repoInquilino = repoInquilino;
+            _repoTipoInmueble = repoTipoInmueble;
         }
 
         public IActionResult Index()
@@ -35,7 +38,9 @@ namespace InmobiliariaCC2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Reserva reserva)
+        public IActionResult Create(
+            Reserva reserva,
+            int? idTipo)
         {
             if (reserva.FechaHasta <= reserva.FechaDesde)
             {
@@ -45,20 +50,29 @@ namespace InmobiliariaCC2.Controllers
                 );
             }
 
-            if (_repoReserva.InmuebleOcupado(
+            if (reserva.IdInmueble > 0 &&
+                reserva.FechaHasta > reserva.FechaDesde)
+            {
+                bool ocupado = _repoReserva.InmuebleOcupado(
                     reserva.IdInmueble,
                     reserva.FechaDesde,
-                    reserva.FechaHasta))
-            {
-                ModelState.AddModelError(
-                    "",
-                    "El inmueble seleccionado ya se encuentra reservado en el rango de fechas elegido."
+                    reserva.FechaHasta
                 );
+
+                if (ocupado)
+                {
+                    ModelState.AddModelError(
+                        "",
+                        "El inmueble seleccionado no está disponible para las fechas elegidas."
+                    );
+                }
             }
 
             if (ModelState.IsValid)
             {
-                var inmueble = _repoInmueble.ObtenerPorId(reserva.IdInmueble);
+                var inmueble = _repoInmueble.ObtenerPorId(
+                    reserva.IdInmueble
+                );
 
                 if (inmueble == null)
                 {
@@ -67,7 +81,11 @@ namespace InmobiliariaCC2.Controllers
                         "No se encontró el inmueble seleccionado."
                     );
 
-                    CargarSelects();
+                    CargarSelects(
+                        idTipo,
+                        reserva.IdInmueble
+                    );
+
                     return View(reserva);
                 }
 
@@ -81,7 +99,10 @@ namespace InmobiliariaCC2.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            CargarSelects();
+            CargarSelects(
+                idTipo,
+                reserva.IdInmueble
+            );
 
             return View(reserva);
         }
@@ -175,21 +196,66 @@ namespace InmobiliariaCC2.Controllers
             );
         }
 
-        private void CargarSelects()
+        [HttpGet]
+        public IActionResult ObtenerInmueblesPorTipo(int idTipo)
         {
-            ViewBag.Inquilinos =
-                new SelectList(
-                    _repoInquilino.ObtenerTodos(),
-                    "IdInquilino",
-                    "Nombre"
-                );
+            var inmuebles = _repoInmueble
+                .ObtenerTodos()
+                .Where(i => i.IdTipo == idTipo)
+                .Select(i => new
+                {
+                    idInmueble = i.IdInmueble,
+                    direccion = i.Direccion,
+                    cupo = i.Cupo,
+                    precioDia = i.PrecioDia
+                })
+                .ToList();
 
-            ViewBag.Inmuebles =
-                new SelectList(
-                    _repoInmueble.ObtenerTodos(),
-                    "IdInmueble",
-                    "Direccion"
-                );
+            return Json(inmuebles);
+        }
+        private void CargarSelects(
+            int? idTipo = null,
+            int? idInmueble = null)
+        {
+            var inquilinos = _repoInquilino
+                .ObtenerTodos()
+                .Select(i => new
+                {
+                    i.IdInquilino,
+                    NombreCompleto =
+                        $"{i.Nombre} {i.Apellido}"
+                })
+                .ToList();
+
+            ViewBag.Inquilinos = new SelectList(
+                inquilinos,
+                "IdInquilino",
+                "NombreCompleto"
+            );
+
+            ViewBag.Tipos = new SelectList(
+                _repoTipoInmueble.ObtenerTodos(),
+                "IdTipo",
+                "Nombre",
+                idTipo
+            );
+
+            var inmuebles = new List<Inmueble>();
+
+            if (idTipo.HasValue)
+            {
+                inmuebles = _repoInmueble
+                    .ObtenerTodos()
+                    .Where(i => i.IdTipo == idTipo.Value)
+                    .ToList();
+            }
+
+            ViewBag.Inmuebles = new SelectList(
+                inmuebles,
+                "IdInmueble",
+                "Direccion",
+                idInmueble
+            );
         }
     }
 }

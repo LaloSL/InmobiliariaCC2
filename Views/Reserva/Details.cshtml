@@ -2,6 +2,30 @@
 
 @{
     ViewData["Title"] = "Detalles de la Reserva";
+
+    int diasPactados = (Model.FechaHasta - Model.FechaDesde).Days;
+
+    int diasCumplidos = 0;
+    int diasRestantes = 0;
+    decimal porcentajeMulta = 0;
+
+    if (Model.FechaTerminacionAnticipada.HasValue)
+    {
+        diasCumplidos =
+            (Model.FechaTerminacionAnticipada.Value - Model.FechaDesde).Days;
+
+        diasRestantes =
+            (Model.FechaHasta - Model.FechaTerminacionAnticipada.Value).Days;
+
+        if (diasCumplidos < (diasPactados / 2.0))
+        {
+            porcentajeMulta = 50;
+        }
+        else
+        {
+            porcentajeMulta = 25;
+        }
+    }
 }
 
 <h2>Detalles de la Reserva #@Model.IdReserva</h2>
@@ -10,53 +34,184 @@
     <div class="card-header bg-primary text-white">
         <strong>Información General de la Reserva</strong>
     </div>
+
     <div class="card-body">
         <dl class="row">
+
             <dt class="col-sm-3">Fecha Desde</dt>
-            <dd class="col-sm-9">@Model.FechaDesde.ToString("dd/MM/yyyy")</dd>
+            <dd class="col-sm-9">
+                @Model.FechaDesde.ToString("dd/MM/yyyy")
+            </dd>
 
             <dt class="col-sm-3">Fecha Hasta</dt>
-            <dd class="col-sm-9">@Model.FechaHasta.ToString("dd/MM/yyyy")</dd>
+            <dd class="col-sm-9">
+                @Model.FechaHasta.ToString("dd/MM/yyyy")
+            </dd>
 
             <dt class="col-sm-3">Monto Diario</dt>
-            <dd class="col-sm-9">$@Model.MontoDia</dd>
+            <dd class="col-sm-9">
+                $@Model.MontoDia.ToString("N2")
+            </dd>
 
             <dt class="col-sm-3">Estado</dt>
             <dd class="col-sm-9">
-                <span class="badge @(Model.Estado ? "bg-success" : "bg-danger")">
-                    @(Model.Estado ? "Activa" : "Inactiva/Anulada")
-                </span>
+
+                @if (Model.Estado)
+                {
+                    <span class="badge bg-success">
+                        Activa
+                    </span>
+                }
+                else if (Model.FechaTerminacionAnticipada.HasValue)
+                {
+                    <span class="badge bg-warning text-dark">
+                        Finalizada anticipadamente
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">
+                        Inactiva/Anulada
+                    </span>
+                }
+
             </dd>
+
         </dl>
     </div>
 </div>
 
+
+@if (Model.FechaTerminacionAnticipada.HasValue)
+{
+    <div class="card mb-3 border-warning">
+
+        <div class="card-header bg-warning">
+            <strong>Finalización Anticipada</strong>
+        </div>
+
+        <div class="card-body">
+
+            <dl class="row">
+
+                <dt class="col-sm-4">
+                    Fecha de Salida Anticipada
+                </dt>
+
+                <dd class="col-sm-8">
+                    @Model.FechaTerminacionAnticipada.Value.ToString("dd/MM/yyyy")
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Días Pactados
+                </dt>
+
+                <dd class="col-sm-8">
+                    @diasPactados
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Días Cumplidos
+                </dt>
+
+                <dd class="col-sm-8">
+                    @diasCumplidos
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Días Restantes
+                </dt>
+
+                <dd class="col-sm-8">
+                    @diasRestantes
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Penalidad Aplicada
+                </dt>
+
+                <dd class="col-sm-8">
+                    <strong>@porcentajeMulta %</strong>
+                    del monto correspondiente a los días restantes
+                </dd>
+
+
+                <dt class="col-sm-4">
+                    Multa Calculada
+                </dt>
+
+                <dd class="col-sm-8">
+                    <strong class="text-danger">
+                        $@Model.Multa.ToString("N2")
+                    </strong>
+                </dd>
+
+            </dl>
+
+        </div>
+    </div>
+}
+
+
 <div class="row">
+
     <div class="col-md-6">
         <div class="card">
+
             <div class="card-header bg-info text-white">
                 <strong>Datos del Inquilino</strong>
             </div>
+
             <div class="card-body">
-                <p><strong>Nombre:</strong> @Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</p>
-                <p><strong>Email:</strong> @Model.Inquilino?.Email</p>
+
+                <p>
+                    <strong>Nombre:</strong>
+                    @Model.Inquilino?.Nombre @Model.Inquilino?.Apellido
+                </p>
+
+                <p>
+                    <strong>Email:</strong>
+                    @Model.Inquilino?.Email
+                </p>
+
             </div>
         </div>
     </div>
+
 
     <div class="col-md-6">
         <div class="card">
+
             <div class="card-header bg-dark text-white">
                 <strong>Datos del Inmueble</strong>
             </div>
+
             <div class="card-body">
-                <p><strong>Dirección:</strong> @Model.Inmueble?.Direccion</p>
-                <p><strong>Precio Base/Día:</strong> $@Model.Inmueble?.PrecioDia</p>
+
+                <p>
+                    <strong>Dirección:</strong>
+                    @Model.Inmueble?.Direccion
+                </p>
+
+                <p>
+                    <strong>Precio Base/Día:</strong>
+                    $@Model.Inmueble?.PrecioDia.ToString("N2")
+                </p>
+
             </div>
         </div>
     </div>
+
 </div>
 
+
 <div class="mt-3">
-    <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Volver al Listado
+    </a>
 </div>

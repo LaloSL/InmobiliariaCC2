@@ -27,10 +27,14 @@ namespace InmobiliariaCC2.Repositories
                             FROM Reserva
                             WHERE IdInmueble = @idInmueble
                               AND Estado = 1
-                              AND (@idReservaExcluir IS NULL
-                                   OR IdReserva != @idReservaExcluir)
-                              AND (FechaDesde < @hasta
-                                   AND FechaHasta > @desde);";
+                              AND (
+                                  @idReservaExcluir IS NULL
+                                  OR IdReserva != @idReservaExcluir
+                              )
+                              AND (
+                                  FechaDesde < @hasta
+                                  AND FechaHasta > @desde
+                              );";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -76,6 +80,8 @@ namespace InmobiliariaCC2.Repositories
                                 r.MontoDia,
                                 r.FechaDesde,
                                 r.FechaHasta,
+                                r.FechaTerminacionAnticipada,
+                                r.Multa,
                                 r.Estado,
 
                                 i.Nombre AS InquilinoNombre,
@@ -114,6 +120,16 @@ namespace InmobiliariaCC2.Repositories
 
                                 FechaHasta =
                                     reader.GetDateTime("FechaHasta"),
+
+                                FechaTerminacionAnticipada =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("FechaTerminacionAnticipada"))
+                                        ? null
+                                        : reader.GetDateTime(
+                                            "FechaTerminacionAnticipada"),
+
+                                Multa =
+                                    reader.GetDecimal("Multa"),
 
                                 Estado =
                                     reader.GetBoolean("Estado"),
@@ -207,6 +223,8 @@ namespace InmobiliariaCC2.Repositories
                                 r.MontoDia,
                                 r.FechaDesde,
                                 r.FechaHasta,
+                                r.FechaTerminacionAnticipada,
+                                r.Multa,
                                 r.Estado,
 
                                 i.IdInquilino,
@@ -251,6 +269,16 @@ namespace InmobiliariaCC2.Repositories
 
                                 FechaHasta =
                                     reader.GetDateTime("FechaHasta"),
+
+                                FechaTerminacionAnticipada =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("FechaTerminacionAnticipada"))
+                                        ? null
+                                        : reader.GetDateTime(
+                                            "FechaTerminacionAnticipada"),
+
+                                Multa =
+                                    reader.GetDecimal("Multa"),
 
                                 Estado =
                                     reader.GetBoolean("Estado"),

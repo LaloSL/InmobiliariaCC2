@@ -27,12 +27,13 @@ namespace InmobiliariaCC2.Controllers
             return View(lista);
         }
 
-
-
         public IActionResult Details(int id)
         {
             var inmueble = _repoInmueble.ObtenerPorId(id);
-            if (inmueble == null) return NotFound();
+
+            if (inmueble == null)
+                return NotFound();
+
             return View(inmueble);
         }
 
@@ -49,22 +50,45 @@ namespace InmobiliariaCC2.Controllers
             if (ModelState.IsValid)
             {
                 _repoInmueble.Guardar(inmueble);
-                TempData["Mensaje"] = "Inmueble registrado correctamente.";
+
+                TempData["Mensaje"] =
+                    "Inmueble registrado correctamente.";
+
                 return RedirectToAction(nameof(Index));
             }
+
             CargarDesplegables();
+
             return View(inmueble);
         }
 
         private void CargarDesplegables()
         {
-            ViewBag.Propietarios = new SelectList(_repoPropietario.ObtenerTodos(), "IdPropietario", "Apellido");
-            ViewBag.Tipos = new SelectList(_repoTipoInmueble.ObtenerTodos(), "IdTipo", "Nombre");
+            var propietarios = _repoPropietario
+                .ObtenerTodos()
+                .Select(p => new
+                {
+                    p.IdPropietario,
+                    NombreCompleto = $"{p.Nombre} {p.Apellido}"
+                })
+                .ToList();
+
+            ViewBag.Propietarios = new SelectList(
+                propietarios,
+                "IdPropietario",
+                "NombreCompleto"
+            );
+
+            ViewBag.Tipos = new SelectList(
+                _repoTipoInmueble.ObtenerTodos(),
+                "IdTipo",
+                "Nombre"
+            );
         }
 
-
-        // GET: Inmueble/BuscarDisponibles
-        public IActionResult BuscarDisponibles(DateTime? desde, DateTime? hasta)
+        public IActionResult BuscarDisponibles(
+            DateTime? desde,
+            DateTime? hasta)
         {
             var lista = new List<Inmueble>();
 
@@ -72,14 +96,22 @@ namespace InmobiliariaCC2.Controllers
             {
                 if (hasta <= desde)
                 {
-                    ViewBag.Error = "La fecha 'Hasta' debe ser posterior a la fecha 'Desde'.";
+                    ViewBag.Error =
+                        "La fecha 'Hasta' debe ser posterior a la fecha 'Desde'.";
+
                     return View(lista);
                 }
 
-                ViewBag.Desde = desde.Value.ToString("yyyy-MM-dd");
-                ViewBag.Hasta = hasta.Value.ToString("yyyy-MM-dd");
+                ViewBag.Desde =
+                    desde.Value.ToString("yyyy-MM-dd");
 
-                lista = _repoInmueble.BuscarDisponibles(desde.Value, hasta.Value);
+                ViewBag.Hasta =
+                    hasta.Value.ToString("yyyy-MM-dd");
+
+                lista = _repoInmueble.BuscarDisponibles(
+                    desde.Value,
+                    hasta.Value
+                );
             }
 
             return View(lista);
