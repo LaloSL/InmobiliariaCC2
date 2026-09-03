@@ -1,0 +1,22 @@
+@model InmobiliariaCC2.Models.TipoInmueble
+
+@{
+    ViewData["Title"] = "Nuevo Tipo de Inmueble";
+}
+
+<h2>Crear Tipo de Inmueble</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label asp-for="Nombre" class="form-label">Nombre del Tipo</label>
+                <input asp-for="Nombre" class="form-control" placeholder="Ej: Departamento, Casa, Loft" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a asp-action="Index" class="btn btn-secondary">Volver</a>
+        </form>
+    </div>
+</div>

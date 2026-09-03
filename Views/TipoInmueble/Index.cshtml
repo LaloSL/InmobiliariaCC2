@@ -1,0 +1,69 @@
+@model IEnumerable<ReservasTemporales.Models.TipoInmueble>
+
+@{
+    ViewData["Title"] = "Tipos de Inmueble";
+}
+
+<h2>Tipos de Inmueble</h2>
+
+<div id="alertContainer"></div>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Mensaje"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Crear Nuevo Tipo</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr id="fila-tipo-@item.IdTipo">
+                <td>@item.IdTipo</td>
+                <td>@item.Nombre</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.IdTipo" class="btn btn-sm btn-info">Detalles</a>
+                    <a asp-action="Edit" asp-route-id="@item.IdTipo" class="btn btn-sm btn-warning">Editar</a>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarTipoAsync(@item.IdTipo)">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        async function eliminarTipoAsync(id) {
+            if (!confirm("¿Desea dar de baja este tipo de inmueble?")) return;
+
+            try {
+                const response = await fetch(`/TipoInmueble/DeleteAsync/${id}`, { method: 'POST' });
+                const data = await response.json();
+
+                const alertContainer = document.getElementById('alertContainer');
+                if (data.success) {
+                    const fila = document.getElementById(`fila-tipo-${id}`);
+                    if (fila) fila.remove();
+                    alertContainer.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                } else {
+                    alertContainer.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    </script>
+}

@@ -1,0 +1,18 @@
+@model InmobiliariaCC2.Models.TipoInmueble
+
+@{
+    ViewData["Title"] = "Detalle de Tipo";
+}
+
+<h2>Detalle del Tipo de Inmueble</h2>
+
+<div class="card col-md-6 mb-3">
+    <div class="card-body">
+        <p><strong>ID:</strong> @Model.IdTipo</p>
+        <p><strong>Nombre:</strong> @Model.Nombre</p>
+        <p><strong>Estado:</strong> @(Model.Estado ? "Activo" : "Inactivo")</p>
+    </div>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.IdTipo" class="btn btn-warning">Editar</a>
+<a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
