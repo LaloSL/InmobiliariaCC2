@@ -88,6 +88,29 @@ Propietario
  Inquilino
 ```
 
+Las relaciones mediante claves foráneas son:
+
+```text
+Inmueble.IdPropietario
+        ↓
+Propietario.IdPropietario
+
+
+Inmueble.IdTipo
+        ↓
+TipoInmueble.IdTipo
+
+
+Reserva.IdInquilino
+        ↓
+Inquilino.IdInquilino
+
+
+Reserva.IdInmueble
+        ↓
+Inmueble.IdInmueble
+```
+
 ## Funcionalidades del sistema
 
 ### Propietarios
@@ -189,6 +212,8 @@ FechaHasta existente > FechaDesde nueva
 
 Si existe una superposición de fechas, el sistema impide registrar la nueva reserva.
 
+De esta manera se evita que un mismo inmueble tenga dos reservas activas para períodos que se superponen.
+
 ## Finalización anticipada de una reserva
 
 Una reserva activa puede finalizarse antes de la fecha originalmente pactada.
@@ -209,6 +234,22 @@ Si el inquilino cumplió la mitad o más del período reservado:
 Multa = 25 % del valor correspondiente a los días restantes
 ```
 
+Para realizar el cálculo, el sistema determina:
+
+```text
+Días pactados
+      ↓
+Días cumplidos
+      ↓
+Días restantes
+      ↓
+Monto de los días restantes
+      ↓
+Aplicación del 50 % o 25 %
+      ↓
+Multa final
+```
+
 Al finalizar anticipadamente una reserva se almacenan:
 
 - Fecha de terminación anticipada.
@@ -226,11 +267,13 @@ En el detalle de la reserva se puede visualizar:
 - Porcentaje de penalidad aplicado.
 - Monto de la multa.
 
-## Puesta en marcha del proyecto
+---
+
+# Puesta en marcha del proyecto
 
 Para ejecutar el proyecto por primera vez en una computadora nueva se deben realizar los siguientes pasos.
 
-### 1. Requisitos previos
+## 1. Requisitos previos
 
 Antes de comenzar se debe contar con:
 
@@ -251,7 +294,9 @@ Para comprobar la versión instalada de .NET:
 dotnet --version
 ```
 
-### 2. Clonar el repositorio
+El proyecto fue desarrollado utilizando .NET 10.
+
+## 2. Clonar el repositorio
 
 Desde una terminal ejecutar:
 
@@ -267,60 +312,193 @@ cd InmobiliariaCC2
 
 También se puede clonar el repositorio utilizando GitHub Desktop.
 
-## Creación de la base de datos
+---
 
-Dentro de los archivos incluidos en el repositorio se encuentra el script SQL necesario para crear la base de datos utilizada por la aplicación.
+# Creación de la base de datos
 
-Quien clone el proyecto debe localizar el archivo `.sql` incluido en el repositorio y ejecutarlo utilizando MySQL Workbench.
+Dentro de los archivos del repositorio se encuentra incluido un archivo `.sql` con la estructura de la base de datos.
 
-El script permite generar la base de datos:
+Este archivo puede abrirse y ejecutarse directamente utilizando MySQL Workbench.
 
-```text
-inmobiliaria_cc2
+También se incluye a continuación el query completo necesario para crear la base de datos desde cero.
+
+## Script completo de creación
+
+Abrir MySQL Workbench, crear una nueva pestaña SQL, copiar el siguiente script y ejecutarlo.
+
+```sql
+CREATE DATABASE IF NOT EXISTS inmobiliaria_cc2;
+
+USE inmobiliaria_cc2;
+
+
+-- =====================================================
+-- TABLA: TipoInmueble
+-- =====================================================
+
+CREATE TABLE TipoInmueble
+(
+    IdTipo INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(50) NOT NULL,
+    Estado BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+
+-- =====================================================
+-- TABLA: Propietario
+-- =====================================================
+
+CREATE TABLE Propietario
+(
+    IdPropietario INT AUTO_INCREMENT PRIMARY KEY,
+    Dni VARCHAR(20) NOT NULL,
+    Nombre VARCHAR(50) NOT NULL,
+    Apellido VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    Telefono VARCHAR(30) NOT NULL,
+    Direccion VARCHAR(150) NULL,
+    Estado BOOLEAN NOT NULL DEFAULT TRUE,
+    FechaCreacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =====================================================
+-- TABLA: Inquilino
+-- =====================================================
+
+CREATE TABLE Inquilino
+(
+    IdInquilino INT AUTO_INCREMENT PRIMARY KEY,
+    Dni VARCHAR(20) NOT NULL,
+    Nombre VARCHAR(50) NOT NULL,
+    Apellido VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    Telefono VARCHAR(30) NOT NULL,
+    DireccionOrigen VARCHAR(150) NULL,
+    Estado BOOLEAN NOT NULL DEFAULT TRUE,
+    FechaCreacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =====================================================
+-- TABLA: Inmueble
+-- =====================================================
+
+CREATE TABLE Inmueble
+(
+    IdInmueble INT AUTO_INCREMENT PRIMARY KEY,
+    Direccion VARCHAR(255) NOT NULL,
+    Cupo INT NOT NULL,
+    IdTipo INT NOT NULL,
+    Coordenadas VARCHAR(100) NULL,
+    PrecioDia DECIMAL(10,2) NOT NULL,
+    IdPropietario INT NOT NULL,
+    Estado BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT FK_Inmueble_TipoInmueble
+        FOREIGN KEY (IdTipo)
+        REFERENCES TipoInmueble(IdTipo),
+
+    CONSTRAINT FK_Inmueble_Propietario
+        FOREIGN KEY (IdPropietario)
+        REFERENCES Propietario(IdPropietario)
+);
+
+
+-- =====================================================
+-- TABLA: Reserva
+-- =====================================================
+
+CREATE TABLE Reserva
+(
+    IdReserva INT AUTO_INCREMENT PRIMARY KEY,
+    IdInquilino INT NOT NULL,
+    IdInmueble INT NOT NULL,
+    MontoDia DECIMAL(10,2) NOT NULL,
+    FechaDesde DATE NOT NULL,
+    FechaHasta DATE NOT NULL,
+    FechaTerminacionAnticipada DATE NULL,
+    Multa DECIMAL(10,2) NOT NULL DEFAULT 0,
+    Estado BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT FK_Reserva_Inquilino
+        FOREIGN KEY (IdInquilino)
+        REFERENCES Inquilino(IdInquilino),
+
+    CONSTRAINT FK_Reserva_Inmueble
+        FOREIGN KEY (IdInmueble)
+        REFERENCES Inmueble(IdInmueble)
+);
 ```
 
-junto con las tablas necesarias para el funcionamiento del sistema.
+## Orden de creación
 
-Entre las tablas principales se encuentran:
+Las tablas que son referenciadas mediante claves foráneas deben existir antes que las tablas que dependen de ellas.
+
+La estructura general es:
 
 ```text
-Propietario
-Inquilino
-TipoInmueble
-Inmueble
-Reserva
+TipoInmueble ──────┐
+                   │
+                   ▼
+                Inmueble
+                   ▲
+                   │
+Propietario ───────┘
+                   │
+                   ▼
+                Reserva
+                   ▲
+                   │
+Inquilino ─────────┘
 ```
 
-Por lo tanto, no es necesario crear manualmente cada una de las tablas.
+Por este motivo:
 
-### Procedimiento sugerido
+- `TipoInmueble` debe existir antes de crear `Inmueble`.
+- `Propietario` debe existir antes de crear `Inmueble`.
+- `Inquilino` debe existir antes de crear `Reserva`.
+- `Inmueble` debe existir antes de crear `Reserva`.
+
+## Procedimiento utilizando MySQL Workbench
 
 1. Abrir MySQL Workbench.
 2. Conectarse al servidor local de MySQL.
-3. Abrir el archivo `.sql` incluido en el proyecto.
-4. Ejecutar el script completo.
-5. Actualizar la lista de bases de datos.
-6. Verificar que aparezca `inmobiliaria_cc2`.
+3. Abrir una nueva pestaña SQL.
+4. Abrir el archivo `.sql` incluido en el repositorio o copiar el script anterior.
+5. Ejecutar el script completo.
+6. Actualizar la lista de bases de datos.
+7. Verificar que exista `inmobiliaria_cc2`.
 
-La estructura esperada será similar a:
+La estructura esperada será:
 
 ```text
 inmobiliaria_cc2
 │
+├── TipoInmueble
 ├── Propietario
 ├── Inquilino
-├── TipoInmueble
 ├── Inmueble
 └── Reserva
 ```
 
-## Configuración de la conexión a MySQL
+Para verificar las tablas desde MySQL también se puede ejecutar:
 
-Por razones de seguridad, la contraseña de MySQL no se almacena directamente dentro de `appsettings.json` y tampoco se debe subir al repositorio de GitHub.
+```sql
+USE inmobiliaria_cc2;
+
+SHOW TABLES;
+```
+
+---
+
+# Configuración de la conexión a MySQL
+
+Por razones de seguridad, la contraseña de MySQL no se almacena directamente dentro de `appsettings.json` y tampoco se sube al repositorio de GitHub.
 
 El proyecto utiliza User Secrets de .NET para almacenar localmente la cadena de conexión.
 
-Cada integrante debe configurar en su propia computadora la contraseña correspondiente a su instalación de MySQL.
+Cada integrante debe configurar en su computadora su propia contraseña de MySQL.
 
 Desde una terminal ubicada dentro de la carpeta del proyecto ejecutar:
 
@@ -334,9 +512,9 @@ Se debe reemplazar:
 TU_CLAVE
 ```
 
-por la contraseña local de MySQL.
+por la contraseña correspondiente al usuario local de MySQL.
 
-Por ejemplo, la estructura de la cadena utilizada por el sistema es:
+La estructura de la cadena de conexión es:
 
 ```text
 Server=localhost
@@ -346,43 +524,45 @@ User=root
 Password=contraseña local
 ```
 
-La aplicación recupera posteriormente la cadena de conexión mediante:
+La aplicación obtiene posteriormente la cadena mediante:
 
 ```csharp
 configuration.GetConnectionString("CadenaSQL")
 ```
 
-La contraseña configurada mediante User Secrets permanece almacenada de forma local y no se incorpora al repositorio Git.
+La configuración de User Secrets queda almacenada de manera local en cada computadora.
 
-### Verificar User Secrets
+La contraseña no se incorpora al repositorio Git y no debe escribirse directamente dentro del código fuente.
 
-Para comprobar que la cadena de conexión fue guardada correctamente se puede ejecutar:
+## Verificar User Secrets
+
+Para comprobar que la cadena de conexión fue guardada correctamente:
 
 ```powershell
 dotnet user-secrets list
 ```
 
-Debería aparecer:
+Deberá aparecer una entrada similar a:
 
 ```text
 ConnectionStrings:CadenaSQL
 ```
 
-junto con la cadena configurada.
+Importante: no publicar ni compartir la contraseña de MySQL mediante GitHub, capturas de pantalla o archivos del proyecto.
 
-Importante: no compartir capturas ni publicar la contraseña de MySQL en GitHub.
+---
 
-## Restaurar dependencias
+# Restaurar dependencias
 
-Una vez clonada la aplicación y configurada la base de datos, desde la carpeta principal del proyecto ejecutar:
+Una vez clonado el proyecto y creada la base de datos, desde la carpeta principal ejecutar:
 
 ```powershell
 dotnet restore
 ```
 
-Este comando restaura los paquetes necesarios para compilar y ejecutar el proyecto.
+Este comando restaura los paquetes necesarios para compilar y ejecutar la aplicación.
 
-El paquete utilizado para la conexión con MySQL es:
+El paquete utilizado para realizar la conexión con MySQL es:
 
 ```text
 MySql.Data
@@ -394,26 +574,25 @@ Para verificar los paquetes instalados:
 dotnet list package
 ```
 
-## Compilar el proyecto
+---
 
-Antes de ejecutar la aplicación se recomienda realizar una compilación:
+# Compilar el proyecto
+
+Antes de ejecutar la aplicación se recomienda comprobar que el proyecto compile correctamente.
+
+Ejecutar:
 
 ```powershell
 dotnet build
 ```
 
-Si todo está correctamente configurado, el comando deberá finalizar sin errores.
+Si no existen problemas, la compilación deberá finalizar sin errores.
 
-Por ejemplo:
+Este paso permite detectar errores de código antes de iniciar la aplicación.
 
-```text
-Compilación correcta.
-0 errores
-```
+---
 
-Este paso permite detectar posibles problemas de código antes de iniciar la aplicación.
-
-## Ejecutar el proyecto
+# Ejecutar el proyecto
 
 Para iniciar la aplicación ejecutar:
 
@@ -427,32 +606,38 @@ Una vez iniciada, la terminal mostrará una dirección local similar a:
 http://localhost:5225
 ```
 
-La dirección indicada debe abrirse desde el navegador.
-
 El puerto puede variar dependiendo de la configuración de cada computadora.
 
-Para detener la aplicación:
+La dirección mostrada en la terminal debe abrirse desde un navegador web.
+
+Para detener la aplicación utilizar:
 
 ```text
 Ctrl + C
 ```
 
-## Resumen para ejecutar el proyecto
+---
 
-Luego de clonar el repositorio, el procedimiento general es:
+# Resumen para levantar el proyecto desde cero
+
+El procedimiento general para ejecutar el sistema en una computadora nueva es:
 
 ```text
-1. Ejecutar el archivo SQL incluido en el repositorio.
-             ↓
-2. Crear la base inmobiliaria_cc2.
-             ↓
-3. Configurar User Secrets.
-             ↓
-4. Restaurar dependencias.
-             ↓
-5. Compilar.
-             ↓
-6. Ejecutar.
+Clonar repositorio
+        ↓
+Crear la base de datos
+        ↓
+Ejecutar el script SQL
+        ↓
+Configurar User Secrets
+        ↓
+dotnet restore
+        ↓
+dotnet build
+        ↓
+dotnet run
+        ↓
+Abrir la aplicación en el navegador
 ```
 
 Los comandos principales son:
@@ -463,27 +648,29 @@ dotnet build
 dotnet run
 ```
 
-Para configurar la conexión a MySQL:
+Para configurar la conexión:
 
 ```powershell
 dotnet user-secrets set "ConnectionStrings:CadenaSQL" "Server=localhost;Port=3306;Database=inmobiliaria_cc2;User=root;Password=TU_CLAVE;"
 ```
 
-Para verificar la configuración:
+Para verificar User Secrets:
 
 ```powershell
 dotnet user-secrets list
 ```
 
-Para verificar los paquetes instalados:
+Para verificar los paquetes:
 
 ```powershell
 dotnet list package
 ```
 
-## Organización del proyecto
+---
 
-La estructura principal es:
+# Organización del proyecto
+
+La estructura principal del proyecto es:
 
 ```text
 InmobiliariaCC2
@@ -526,37 +713,29 @@ InmobiliariaCC2
 └── archivo de base de datos .sql
 ```
 
-## Arquitectura utilizada
+---
 
-El proyecto utiliza el patrón MVC:
+# Arquitectura utilizada
 
-```text
-Model
-  ↑
-  │
-Controller
-  │
-  ↓
-View
-```
-
-Para el acceso a la base de datos se incorporan repositorios:
+El proyecto utiliza el patrón MVC.
 
 ```text
-Navegador
-    ↓
-Controller
-    ↓
-Repositorio
-    ↓
-MySqlCommand
-    ↓
-Consulta SQL
-    ↓
-MySQL
+             Usuario
+                │
+                ▼
+            Controller
+             /       \
+            ▼         ▼
+         Model       View
+            │
+            ▼
+       Repository
+            │
+            ▼
+          MySQL
 ```
 
-### Models
+## Models
 
 Representan las entidades principales del sistema:
 
@@ -566,28 +745,145 @@ Representan las entidades principales del sistema:
 - Inmueble.
 - Reserva.
 
-### Controllers
+Los modelos contienen las propiedades que representan los datos utilizados por la aplicación.
 
-Reciben las solicitudes realizadas desde las vistas y coordinan la lógica necesaria para responder al usuario.
+## Controllers
 
-### Repositories
+Los controladores reciben las solicitudes realizadas por el usuario desde las vistas y coordinan las diferentes operaciones del sistema.
 
-Contienen las operaciones de acceso a MySQL.
+Por ejemplo:
 
-En ellos se escriben manualmente las consultas SQL necesarias para:
+```text
+Usuario
+   ↓
+ReservaController
+   ↓
+RepositorioReserva
+   ↓
+MySQL
+```
 
-- Consultar registros.
+## Repositories
+
+Los repositorios contienen las operaciones necesarias para acceder a la base de datos.
+
+En ellos se utilizan:
+
+```text
+MySqlConnection
+MySqlCommand
+MySqlDataReader
+```
+
+y se escriben manualmente consultas SQL para:
+
+- Listar registros.
+- Buscar registros por ID.
 - Insertar registros.
 - Modificar registros.
 - Realizar bajas lógicas.
-- Consultar relaciones entre tablas.
-- Verificar disponibilidad de inmuebles.
+- Realizar INNER JOIN.
+- Verificar disponibilidad.
+- Registrar reservas.
+- Finalizar reservas anticipadamente.
 
-### Views
+Ejemplo general:
 
-Contienen las interfaces que utiliza el usuario para interactuar con el sistema.
+```csharp
+using (var connection = new MySqlConnection(_connectionString))
+{
+    var sql = @"SELECT *
+                FROM Propietario
+                WHERE Estado = 1;";
 
-## Control de versiones
+    using (var command = new MySqlCommand(sql, connection))
+    {
+        connection.Open();
+
+        using (var reader = command.ExecuteReader())
+        {
+            // Lectura de los registros
+        }
+    }
+}
+```
+
+## Views
+
+Las vistas contienen las interfaces utilizadas por el usuario.
+
+Entre otras operaciones permiten:
+
+- Visualizar listados.
+- Crear registros.
+- Editar registros.
+- Consultar detalles.
+- Seleccionar propietarios.
+- Seleccionar inquilinos.
+- Seleccionar tipos de inmueble.
+- Seleccionar inmuebles.
+- Registrar reservas.
+- Consultar detalles de reservas.
+
+Las vistas utilizan Razor, HTML, Bootstrap y JavaScript.
+
+---
+
+# Baja lógica
+
+En diferentes entidades del sistema no se realiza una eliminación física del registro.
+
+En cambio, se modifica el campo:
+
+```text
+Estado
+```
+
+Por ejemplo:
+
+```sql
+UPDATE Propietario
+SET Estado = 0
+WHERE IdPropietario = @id;
+```
+
+De esta manera el registro permanece almacenado en la base de datos, pero deja de aparecer entre los registros activos.
+
+---
+
+# Uso de JavaScript
+
+JavaScript es utilizado en determinadas vistas para realizar operaciones dinámicas.
+
+Por ejemplo, al crear una reserva:
+
+```text
+Seleccionar Tipo de Inmueble
+             ↓
+JavaScript realiza una solicitud
+             ↓
+ReservaController
+             ↓
+ObtenerInmueblesPorTipo()
+             ↓
+RepositorioInmueble
+             ↓
+MySQL
+             ↓
+Se cargan los inmuebles correspondientes
+```
+
+De esta manera, al seleccionar un tipo de inmueble, el usuario puede visualizar únicamente los inmuebles pertenecientes a ese tipo.
+
+Además se muestra información como:
+
+```text
+Dirección | Capacidad | Precio por día
+```
+
+---
+
+# Control de versiones
 
 El proyecto utiliza Git y GitHub para el control de versiones y el trabajo colaborativo.
 
@@ -615,13 +911,13 @@ Para realizar un commit:
 git commit -m "Descripcion del cambio"
 ```
 
-Para subir los cambios al repositorio:
+Para subir los cambios:
 
 ```powershell
 git push origin main
 ```
 
-Flujo habitual:
+El flujo habitual de trabajo es:
 
 ```text
 git pull origin main
@@ -639,26 +935,102 @@ git push origin main
 
 Si otro integrante realizó modificaciones en el repositorio remoto, los cambios deben integrarse antes de realizar un nuevo `push`.
 
-No se recomienda utilizar `force push` para resolver conflictos en el repositorio compartido.
+No se recomienda utilizar `force push` para resolver conflictos en un repositorio compartido.
 
-## Importante para nuevos integrantes
+---
+
+# Importante para nuevos integrantes
 
 Antes de comenzar a trabajar con el proyecto se debe comprobar:
 
 1. Tener instalado .NET 10.
 2. Tener MySQL instalado y funcionando.
-3. Tener acceso al repositorio.
-4. Clonar el proyecto.
-5. Ejecutar el archivo SQL incluido en el repositorio.
-6. Verificar que exista la base `inmobiliaria_cc2`.
-7. Configurar `ConnectionStrings:CadenaSQL` mediante User Secrets.
-8. Ejecutar `dotnet restore`.
-9. Ejecutar `dotnet build`.
-10. Ejecutar `dotnet run`.
+3. Tener MySQL Workbench o una herramienta equivalente.
+4. Tener Git instalado.
+5. Clonar el repositorio.
+6. Ejecutar el archivo SQL incluido en el proyecto o utilizar el script disponible en este README.
+7. Verificar que exista la base `inmobiliaria_cc2`.
+8. Verificar que estén creadas todas las tablas.
+9. Configurar `ConnectionStrings:CadenaSQL` mediante User Secrets.
+10. Ejecutar `dotnet restore`.
+11. Ejecutar `dotnet build`.
+12. Ejecutar `dotnet run`.
 
-La contraseña de MySQL nunca debe escribirse directamente dentro del código fuente ni subirse a GitHub.
+La contraseña de MySQL nunca debe escribirse directamente dentro del código fuente ni subirse al repositorio de GitHub.
 
-## Objetivo académico
+---
+
+# Comandos útiles
+
+Comprobar la versión de .NET:
+
+```powershell
+dotnet --version
+```
+
+Restaurar paquetes:
+
+```powershell
+dotnet restore
+```
+
+Compilar:
+
+```powershell
+dotnet build
+```
+
+Ejecutar:
+
+```powershell
+dotnet run
+```
+
+Ver paquetes instalados:
+
+```powershell
+dotnet list package
+```
+
+Ver User Secrets:
+
+```powershell
+dotnet user-secrets list
+```
+
+Ver estado de Git:
+
+```powershell
+git status
+```
+
+Actualizar el repositorio:
+
+```powershell
+git pull origin main
+```
+
+Agregar cambios:
+
+```powershell
+git add .
+```
+
+Crear un commit:
+
+```powershell
+git commit -m "Descripcion del cambio"
+```
+
+Subir cambios:
+
+```powershell
+git push origin main
+```
+
+---
+
+# Objetivo académico
 
 El proyecto fue desarrollado como trabajo académico de programación web.
 
