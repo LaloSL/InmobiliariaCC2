@@ -1,0 +1,45 @@
+@model InmobiliariaCC2.Models.Reserva
+
+@{
+    ViewData["Title"] = "Nueva Reserva";
+}
+
+<h2>Registrar Reserva</h2>
+
+@if (ViewData.ModelState.ErrorCount > 0)
+{
+    <div class="alert alert-danger" asp-validation-summary="All"></div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label asp-for="IdInquilino" class="form-label">Inquilino</label>
+                <select asp-for="IdInquilino" class="form-select" asp-items="ViewBag.Inquilinos" required>
+                    <option value="">-- Seleccionar Inquilino --</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="IdInmueble" class="form-label">Inmueble</label>
+                <select asp-for="IdInmueble" class="form-select" asp-items="ViewBag.Inmuebles" required>
+                    <option value="">-- Seleccionar Inmueble --</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FechaDesde" class="form-label">Fecha Desde</label>
+                <input asp-for="FechaDesde" type="date" class="form-control" value="@ViewBag.Desde" required />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FechaHasta" class="form-label">Fecha Hasta</label>
+                <input asp-for="FechaHasta" type="date" class="form-control" value="@ViewBag.Hasta" required />
+            </div>
+
+            <button type="submit" class="btn btn-success">Confirmar Reserva</button>
+            <a asp-action="Index" class="btn btn-secondary">Volver</a>
+        </form>
+    </div>
+</div>

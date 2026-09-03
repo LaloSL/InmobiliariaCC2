@@ -1,0 +1,34 @@
+@model InmobiliariaCC2.Models.Reserva
+
+@{
+    ViewData["Title"] = "Terminación Anticipada";
+}
+
+<h2>Finalizar Reserva #@Model.IdReserva Antes de Tiempo</h2>
+
+<div class="alert alert-warning">
+    <strong>Atención:</strong> Al registrar una fecha de salida anticipada, el sistema calculará automáticamente la
+    multa correspondiente.
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Inquilino:</strong> @Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</p>
+        <p><strong>Inmueble:</strong> @Model.Inmueble?.Direccion</p>
+        <p><strong>Período Original:</strong> @Model.FechaDesde.ToString("dd/MM/yyyy") al
+            @Model.FechaHasta.ToString("dd/MM/yyyy")</p>
+            <p><strong>Monto Diario:</strong> $@Model.MontoDia</p>
+        </div>
+    </div>
+
+    <form asp-action="FinalizarAnticipadamente" method="post">
+        <input type="hidden" name="idReserva" value="@Model.IdReserva" />
+
+        <div class="mb-3 col-md-4">
+            <label for="fechaTerminacion" class="form-label">Fecha Real de Salida</label>
+            <input type="date" name="fechaTerminacion" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn btn-danger">Calcular Multa y Finalizar</button>
+        <a asp-action="Details" asp-route-id="@Model.IdReserva" class="btn btn-secondary">Cancelar</a>
+    </form>
