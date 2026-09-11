@@ -55,10 +55,8 @@ namespace InmobiliariaCC2.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Guardamos primero para obtener el Id autogenerado
                 int idCreado = _repoInmueble.Guardar(inmueble);
 
-                // Si adjuntó un archivo FotoFile desde la vista
                 if (inmueble.FotoFile != null && inmueble.FotoFile.Length > 0)
                 {
                     string wwwPath = _environment.WebRootPath;
@@ -78,10 +76,8 @@ namespace InmobiliariaCC2.Controllers
                         inmueble.FotoFile.CopyTo(stream);
                     }
 
-                    // Asignamos la ruta relativa a Foto
                     inmueble.Foto = $"/uploads/inmuebles/{nombreArchivo}";
 
-                    // Actualizamos la fila en la BD con la ruta de la foto
                     _repoInmueble.Actualizar(inmueble);
                 }
 
@@ -128,7 +124,6 @@ namespace InmobiliariaCC2.Controllers
                         Directory.CreateDirectory(pathUploads);
                     }
 
-                    // Eliminar foto previa si existe
                     if (!string.IsNullOrEmpty(inmuebleExistente.Foto))
                     {
                         string fotoAntiguaRuta = Path.Combine(wwwPath, inmuebleExistente.Foto.TrimStart('/'));
@@ -151,7 +146,6 @@ namespace InmobiliariaCC2.Controllers
                 }
                 else
                 {
-                    // Conserva la foto existente si no se subió una nueva
                     inmueble.Foto = inmuebleExistente.Foto;
                 }
 
