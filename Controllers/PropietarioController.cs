@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InmobiliariaCC2.Controllers
 {
@@ -14,6 +15,7 @@ namespace InmobiliariaCC2.Controllers
         }
 
         // GET: Propietario
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Index()
         {
             var lista = _repositorio.ObtenerTodos();
@@ -29,6 +31,7 @@ namespace InmobiliariaCC2.Controllers
         // POST: Propietario/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create(Propietario propietario)
         {
             if (ModelState.IsValid)
@@ -42,6 +45,7 @@ namespace InmobiliariaCC2.Controllers
 
 
         // GET: Propietario/Edit/5
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Edit(int id)
         {
             var propietario = _repositorio.ObtenerPorId(id);
@@ -55,6 +59,7 @@ namespace InmobiliariaCC2.Controllers
         // POST: Propietario/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Edit(int id, Propietario propietario)
         {
             if (id != propietario.IdPropietario)
@@ -72,6 +77,7 @@ namespace InmobiliariaCC2.Controllers
         }
 
         // GET: Propietario/Delete/5
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
             var propietario = _repositorio.ObtenerPorId(id);
@@ -85,6 +91,7 @@ namespace InmobiliariaCC2.Controllers
         // POST: Propietario/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+           [Authorize(Roles = "Administrador")]
         public IActionResult DeleteConfirmed(int id)
         {
             _repositorio.Baja(id);
@@ -93,6 +100,7 @@ namespace InmobiliariaCC2.Controllers
         }
 
         // GET: Propietario/Details/5
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Details(int id)
         {
             var propietario = _repositorio.ObtenerPorId(id);

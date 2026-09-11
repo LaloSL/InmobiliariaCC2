@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InmobiliariaCC2.Controllers
 {
@@ -14,6 +15,7 @@ namespace InmobiliariaCC2.Controllers
         }
 
         // GET: Inquilino
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Index()
         {
             var lista = _repositorio.ObtenerTodos();
