@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InmobiliariaCC2.Models
 {
@@ -28,5 +29,11 @@ namespace InmobiliariaCC2.Models
         public Propietario? Propietario { get; set; }
 
         public bool Estado { get; set; } = true;
+
+
+        public string? Foto { get; set; }
+
+        [NotMapped]
+        public IFormFile? FotoFile { get; set; }
     }
 }

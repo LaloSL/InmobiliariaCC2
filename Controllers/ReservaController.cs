@@ -196,6 +196,7 @@ namespace InmobiliariaCC2.Controllers
             );
         }
 
+
         [HttpGet]
         public IActionResult ObtenerInmueblesPorTipo(int idTipo)
         {
@@ -207,7 +208,8 @@ namespace InmobiliariaCC2.Controllers
                     idInmueble = i.IdInmueble,
                     direccion = i.Direccion,
                     cupo = i.Cupo,
-                    precioDia = i.PrecioDia
+                    precioDia = i.PrecioDia,
+                    foto = i.Foto // <--- Agregado
                 })
                 .ToList();
 
