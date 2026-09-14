@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InmobiliariaCC2.Controllers
 {
@@ -24,14 +25,14 @@ namespace InmobiliariaCC2.Controllers
             _environment = environment;
         }
 
-        // GET: Inmueble
+        [AllowAnonymous]
         public IActionResult Index()
         {
             var lista = _repoInmueble.ObtenerTodos();
             return View(lista);
         }
 
-        // GET: Inmueble/Details/5
+        [AllowAnonymous]
         public IActionResult Details(int id)
         {
             var inmueble = _repoInmueble.ObtenerPorId(id);
@@ -41,16 +42,17 @@ namespace InmobiliariaCC2.Controllers
             return View(inmueble);
         }
 
-        // GET: Inmueble/Create
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
             CargarDesplegables();
             return View();
         }
 
-        // POST: Inmueble/Create
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create(Inmueble inmueble)
         {
             if (ModelState.IsValid)
@@ -89,7 +91,7 @@ namespace InmobiliariaCC2.Controllers
             return View(inmueble);
         }
 
-        // GET: Inmueble/Edit/5
+        [Authorize(Roles = "Administrador")]
         public IActionResult Edit(int id)
         {
             var inmueble = _repoInmueble.ObtenerPorId(id);
@@ -103,6 +105,7 @@ namespace InmobiliariaCC2.Controllers
         // POST: Inmueble/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Edit(int id, Inmueble inmueble)
         {
             if (id != inmueble.IdInmueble)
@@ -158,7 +161,8 @@ namespace InmobiliariaCC2.Controllers
             return View(inmueble);
         }
 
-        // GET: Inmueble/Delete/5
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
             var inmueble = _repoInmueble.ObtenerPorId(id);
@@ -168,9 +172,10 @@ namespace InmobiliariaCC2.Controllers
             return View(inmueble);
         }
 
-        // POST: Inmueble/Delete/5
+        
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult DeleteConfirmed(int id)
         {
             var inmueble = _repoInmueble.ObtenerPorId(id);
@@ -194,6 +199,7 @@ namespace InmobiliariaCC2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [AllowAnonymous]
         public IActionResult BuscarDisponibles(DateTime? desde, DateTime? hasta)
         {
             var lista = new List<Inmueble>();

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace InmobiliariaCC2.Controllers
 {
@@ -13,12 +15,14 @@ namespace InmobiliariaCC2.Controllers
             _repo = repo;
         }
 
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Index()
         {
             var lista = _repo.ObtenerTodos();
             return View(lista);
         }
 
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Details(int id)
         {
             var tipo = _repo.ObtenerPorId(id);
@@ -31,6 +35,7 @@ namespace InmobiliariaCC2.Controllers
             return View(tipo);
         }
 
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
             return View();
@@ -38,6 +43,7 @@ namespace InmobiliariaCC2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create(TipoInmueble tipo)
         {
             if (ModelState.IsValid)
@@ -53,6 +59,7 @@ namespace InmobiliariaCC2.Controllers
             return View(tipo);
         }
 
+        [Authorize(Roles = "Administrador")]
         public IActionResult Edit(int id)
         {
             var tipo = _repo.ObtenerPorId(id);
@@ -67,6 +74,7 @@ namespace InmobiliariaCC2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Edit(int id, TipoInmueble tipo)
         {
             if (id != tipo.IdTipo)
@@ -88,7 +96,10 @@ namespace InmobiliariaCC2.Controllers
         }
 
         [HttpPost]
-        public IActionResult DeleteAsync(int id)
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+
+        public IActionResult Delete(int id)
         {
             try
             {
