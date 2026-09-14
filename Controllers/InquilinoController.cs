@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace InmobiliariaCC2.Controllers
 {
+    [Authorize]
     public class InquilinoController : Controller
     {
         private readonly RepositorioInquilino _repositorio;
@@ -22,7 +23,20 @@ namespace InmobiliariaCC2.Controllers
             return View(lista);
         }
 
+        // GET: Inquilino/Details/5
+        [Authorize(Roles = "Administrador,Empleado")]
+        public IActionResult Details(int id)
+        {
+            var inquilino = _repositorio.ObtenerPorId(id);
+            if (inquilino == null)
+            {
+                return NotFound();
+            }
+            return View(inquilino);
+        }
+
         // GET: Inquilino/Create
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
             return View();
@@ -31,6 +45,7 @@ namespace InmobiliariaCC2.Controllers
         // POST: Inquilino/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create(Inquilino inquilino)
         {
             if (ModelState.IsValid)
@@ -43,6 +58,7 @@ namespace InmobiliariaCC2.Controllers
         }
 
         // GET: Inquilino/Edit/5
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Edit(int id)
         {
             var inquilino = _repositorio.ObtenerPorId(id);
@@ -56,6 +72,7 @@ namespace InmobiliariaCC2.Controllers
         // POST: Inquilino/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Edit(int id, Inquilino inquilino)
         {
             if (id != inquilino.IdInquilino)
@@ -72,8 +89,9 @@ namespace InmobiliariaCC2.Controllers
             return View(inquilino);
         }
 
-        // GET: Inquilino/Details/5
-        public IActionResult Details(int id)
+        // GET: Inquilino/Delete/5
+        [Authorize(Roles = "Administrador")]
+        public IActionResult Delete(int id)
         {
             var inquilino = _repositorio.ObtenerPorId(id);
             if (inquilino == null)
@@ -81,6 +99,17 @@ namespace InmobiliariaCC2.Controllers
                 return NotFound();
             }
             return View(inquilino);
+        }
+
+        // POST: Inquilino/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            _repositorio.Baja(id);
+            TempData["Mensaje"] = "Inquilino eliminado exitosamente.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

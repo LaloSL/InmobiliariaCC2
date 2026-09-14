@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace InmobiliariaCC2.Controllers
 {
+
+    [Authorize]
     public class PropietarioController : Controller
     {
         private readonly RepositorioPropietario _repositorio;
@@ -22,9 +24,23 @@ namespace InmobiliariaCC2.Controllers
             return View(lista);
         }
 
+        // GET: Propietario/Details/5
+        [Authorize(Roles = "Administrador,Empleado")]
+        public IActionResult Details(int id)
+        {
+            var propietario = _repositorio.ObtenerPorId(id);
+            if (propietario == null)
+            {
+                return NotFound();
+            }
+            return View(propietario);
+        }
+
         // GET: Propietario/Create
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
+
             return View();
         }
 
@@ -42,7 +58,6 @@ namespace InmobiliariaCC2.Controllers
             }
             return View(propietario);
         }
-
 
         // GET: Propietario/Edit/5
         [Authorize(Roles = "Administrador,Empleado")]
@@ -91,25 +106,12 @@ namespace InmobiliariaCC2.Controllers
         // POST: Propietario/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-           [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador")]
         public IActionResult DeleteConfirmed(int id)
         {
             _repositorio.Baja(id);
             TempData["Mensaje"] = "Propietario eliminado exitosamente.";
             return RedirectToAction(nameof(Index));
         }
-
-        // GET: Propietario/Details/5
-        [Authorize(Roles = "Administrador,Empleado")]
-        public IActionResult Details(int id)
-        {
-            var propietario = _repositorio.ObtenerPorId(id);
-            if (propietario == null)
-            {
-                return NotFound();
-            }
-            return View(propietario);
-        }
-
     }
 }
