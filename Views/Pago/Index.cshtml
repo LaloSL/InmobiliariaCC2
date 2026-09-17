@@ -425,14 +425,15 @@
 
                     <td>
 
+                        <a asp-action="Details" asp-route-id="@item.IdPago" class="btn btn-sm btn-info">
+                            Detalles
+                        </a>
+
                         @if (item.Estado)
                         {
                             <a asp-action="Edit" asp-route-id="@item.IdPago" class="btn btn-sm btn-warning">
-
                                 Editar
-
                             </a>
-
 
                             <form asp-action="Anular" asp-route-id="@item.IdPago" method="post" class="d-inline">
 
@@ -440,18 +441,10 @@
 
                                 <button type="submit" class="btn btn-sm btn-danger"
                                         onclick="return confirm('¿Está seguro que desea anular este pago?');">
-
                                     Anular
-
                                 </button>
 
                             </form>
-                        }
-                        else
-                        {
-                            <span class="text-muted">
-                                Sin acciones
-                            </span>
                         }
 
                     </td>

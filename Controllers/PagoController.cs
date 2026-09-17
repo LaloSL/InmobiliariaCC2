@@ -12,13 +12,16 @@ namespace InmobiliariaCC2.Controllers
     {
         private readonly RepositorioPago _repoPago;
         private readonly RepositorioReserva _repoReserva;
+        private readonly RepositorioUsuario _repoUsuario;
 
         public PagoController(
             RepositorioPago repoPago,
-            RepositorioReserva repoReserva)
+            RepositorioReserva repoReserva,
+            RepositorioUsuario repoUsuario)
         {
             _repoPago = repoPago;
             _repoReserva = repoReserva;
+            _repoUsuario = repoUsuario;
         }
 
 
@@ -86,6 +89,93 @@ namespace InmobiliariaCC2.Controllers
 
             return View(pagos);
         }
+
+        //----------------------------------------
+
+
+        [HttpGet]
+        public IActionResult Details(int id)
+        {
+            var pago =
+                _repoPago.ObtenerPorId(id);
+
+            if (pago == null)
+            {
+                return NotFound();
+            }
+
+
+            var reserva =
+                _repoReserva.ObtenerPorIdConDetalles(
+                    pago.IdReserva
+                );
+
+            if (reserva == null)
+            {
+                return NotFound();
+            }
+
+
+            ViewBag.Reserva =
+                reserva;
+
+
+
+
+            if (User.IsInRole("Administrador"))
+            {
+                string usuarioCreacion =
+                    "No disponible";
+
+                string usuarioAnulacion =
+                    "No corresponde";
+
+
+                if (pago.IdUsuarioCreacion.HasValue)
+                {
+                    var usuario =
+                        _repoUsuario.ObtenerPorId(
+                            pago.IdUsuarioCreacion.Value
+                        );
+
+                    if (usuario != null)
+                    {
+                        usuarioCreacion =
+                            $"{usuario.Nombre} ({usuario.Rol})";
+                    }
+                }
+
+
+                if (pago.IdUsuarioAnulacion.HasValue)
+                {
+                    var usuario =
+                        _repoUsuario.ObtenerPorId(
+                            pago.IdUsuarioAnulacion.Value
+                        );
+
+                    if (usuario != null)
+                    {
+                        usuarioAnulacion =
+                            $"{usuario.Nombre} ({usuario.Rol})";
+                    }
+                }
+
+
+                ViewBag.UsuarioCreacion =
+                    usuarioCreacion;
+
+                ViewBag.UsuarioAnulacion =
+                    usuarioAnulacion;
+            }
+
+
+            return View(pago);
+        }
+        //--------------------------------------
+
+
+
+
 
         [HttpGet]
         public IActionResult Create(int idReserva)
