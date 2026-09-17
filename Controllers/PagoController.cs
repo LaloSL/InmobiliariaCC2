@@ -714,20 +714,11 @@ namespace InmobiliariaCC2.Controllers
                 };
 
 
-            // ------------------------------------------------------
-            // GUARDAR PAGO
-            // ------------------------------------------------------
-
             int idPago =
                 _repoPago.Guardar(
                     pago
                 );
 
-
-            // ------------------------------------------------------
-            // FINALIZAR RESERVA
-            // SOLAMENTE DESPUÉS DE REGISTRAR LA MULTA
-            // ------------------------------------------------------
 
             _repoReserva.FinalizarAnticipadamente(
                 idReserva,
@@ -737,19 +728,12 @@ namespace InmobiliariaCC2.Controllers
             );
 
 
-            // ------------------------------------------------------
-            // MENSAJE
-            // ------------------------------------------------------
-
             TempData["Mensaje"] =
                 $"Terminación anticipada registrada correctamente. " +
                 $"Pago N.º {idPago} por multa de " +
                 $"{multaCalculada:C} registrado correctamente.";
 
 
-            // ------------------------------------------------------
-            // VOLVER AL DETALLE
-            // ------------------------------------------------------
 
             return RedirectToAction(
                 "Details",
