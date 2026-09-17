@@ -16,7 +16,8 @@
 
 @if (ViewData.ModelState.ErrorCount > 0)
 {
-    <div class="alert alert-danger" asp-validation-summary="All"></div>
+    <div class="alert alert-danger" asp-validation-summary="All">
+    </div>
 }
 
 @if (reserva != null)
@@ -62,13 +63,11 @@
 
                     <p>
                         <strong>Monto total:</strong><br />
-
                         @montoTotal.ToString("C")
                     </p>
 
                     <p>
                         <strong>Monto mínimo para reservar:</strong><br />
-
                         @montoMinimo.ToString("C")
                     </p>
 
@@ -92,7 +91,6 @@
 
             </div>
 
-
             @if (faltaParaMinimo > 0)
             {
                 <div class="alert alert-warning mb-0">
@@ -111,25 +109,19 @@
             else if (saldoPendiente > 0)
             {
                 <div class="alert alert-success mb-0">
-
                     El monto mínimo de reserva ya fue alcanzado.
-
                 </div>
             }
             else
             {
                 <div class="alert alert-success mb-0">
-
                     La reserva se encuentra totalmente pagada.
-
                 </div>
             }
 
         </div>
-
     </div>
 }
-
 
 <div class="row">
 
@@ -144,41 +136,40 @@
 
             <div class="mb-3">
 
-                <label asp-for="Monto" class="form-label">
+                <label asp-for="Concepto" class="form-label">
 
-                    Monto del Pago
+                    Concepto
 
                 </label>
 
-                <input asp-for="Monto" type="number" step="0.01" min="0.01" class="form-control" required />
+                <input asp-for="Concepto" class="form-control" maxlength="100"
+                       placeholder="Ej.: Seña inicial, pago parcial..." required />
 
-                <span asp-validation-for="Monto" class="text-danger">
+                <span asp-validation-for="Concepto" class="text-danger">
                 </span>
-
-                <div class="form-text">
-
-                    Saldo pendiente:
-                    <strong>
-                        @saldoPendiente.ToString("C")
-                    </strong>
-
-                </div>
 
             </div>
 
 
             <div class="mb-3">
 
-                <label asp-for="FechaPago" class="form-label">
+                <label asp-for="Monto" class="form-label">
 
-                    Fecha del Pago
+                    Monto del Pago
 
                 </label>
 
-                <input asp-for="FechaPago" type="datetime-local" class="form-control" required />
+                <input asp-for="Monto" type="number" step="0.01" min="0.01"
+                       max="@saldoPendiente.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                       class="form-control" required />
 
-                <span asp-validation-for="FechaPago" class="text-danger">
+                <span asp-validation-for="Monto" class="text-danger">
                 </span>
+
+                <div class="form-text">
+                    El pago no puede superar el saldo pendiente de
+                    <strong>@saldoPendiente.ToString("C")</strong>.
+                </div>
 
             </div>
 
@@ -194,7 +185,7 @@
                 <select asp-for="MedioPago" class="form-select" required>
 
                     <option value="">
-                        -- Seleccionar Medio de Pago --
+                        -- Seleccionar medio de pago --
                     </option>
 
                     <option value="Efectivo">
@@ -229,7 +220,7 @@
 
                 </label>
 
-                <textarea asp-for="Observacion" class="form-control" rows="3" placeholder="Observación opcional">
+                <textarea asp-for="Observacion" class="form-control" rows="3" maxlength="255">
                 </textarea>
 
                 <span asp-validation-for="Observacion" class="text-danger">
@@ -247,7 +238,7 @@
 
             <a asp-action="Index" asp-route-idReserva="@Model.IdReserva" class="btn btn-secondary">
 
-                Volver
+                Cancelar
 
             </a>
 
@@ -256,7 +247,6 @@
     </div>
 
 </div>
-
 
 @section Scripts
 {

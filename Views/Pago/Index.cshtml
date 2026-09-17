@@ -8,52 +8,40 @@
     decimal totalPagado = ViewBag.TotalPagado ?? 0m;
     decimal saldoPendiente = ViewBag.SaldoPendiente ?? 0m;
 
-    decimal montoTotal =
-        reserva?.MontoTotal ?? 0m;
-
-    decimal montoMinimo =
-        reserva?.MontoMinimoReserva ?? 0m;
+    decimal montoTotal = reserva?.MontoTotal ?? 0m;
+    decimal montoMinimo = reserva?.MontoMinimoReserva ?? 0m;
 }
 
 <h2>Pagos de la Reserva</h2>
 
-
 @if (TempData["Mensaje"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show">
-
         @TempData["Mensaje"]
 
         <button type="button" class="btn-close" data-bs-dismiss="alert">
         </button>
-
     </div>
 }
-
 
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show">
-
         @TempData["Error"]
 
         <button type="button" class="btn-close" data-bs-dismiss="alert">
         </button>
-
     </div>
 }
-
 
 @if (reserva != null)
 {
     <div class="card mb-4">
 
         <div class="card-header">
-
             <strong>
                 Reserva N.º @reserva.IdReserva
             </strong>
-
         </div>
 
         <div class="card-body">
@@ -61,30 +49,23 @@
             <div class="row">
 
                 <div class="col-md-4">
-
                     <strong>Inquilino</strong>
 
                     <p>
                         @reserva.Inquilino?.Nombre
                         @reserva.Inquilino?.Apellido
                     </p>
-
                 </div>
 
-
                 <div class="col-md-4">
-
                     <strong>Inmueble</strong>
 
                     <p>
                         @reserva.Inmueble?.Direccion
                     </p>
-
                 </div>
 
-
                 <div class="col-md-4">
-
                     <strong>Período</strong>
 
                     <p>
@@ -92,87 +73,65 @@
                         -
                         @reserva.FechaHasta.ToString("dd/MM/yyyy")
                     </p>
-
                 </div>
 
             </div>
 
-
             <hr />
-
 
             <div class="row">
 
                 <div class="col-md-3">
-
                     <strong>Monto Total</strong>
 
                     <p class="fs-5">
                         @montoTotal.ToString("C")
                     </p>
-
                 </div>
 
-
                 <div class="col-md-3">
-
                     <strong>Mínimo Reserva</strong>
 
                     <p class="fs-5">
                         @montoMinimo.ToString("C")
                     </p>
-
                 </div>
 
-
                 <div class="col-md-3">
-
                     <strong>Total Pagado</strong>
 
                     <p class="fs-5 text-success">
                         @totalPagado.ToString("C")
                     </p>
-
                 </div>
 
-
                 <div class="col-md-3">
-
                     <strong>Saldo Pendiente</strong>
 
                     <p class="fs-5 text-danger">
                         @saldoPendiente.ToString("C")
                     </p>
-
                 </div>
 
             </div>
 
-
             @if (totalPagado >= montoTotal && montoTotal > 0)
             {
                 <div class="alert alert-success mb-0">
-
                     <strong>Pago completo.</strong>
-
                     La reserva se encuentra totalmente pagada.
-
                 </div>
             }
             else if (totalPagado >= montoMinimo && montoMinimo > 0)
             {
                 <div class="alert alert-success mb-0">
-
                     <strong>Monto mínimo alcanzado.</strong>
-
                     La seña requerida para la reserva está cubierta.
-
                 </div>
             }
             else
             {
-                decimal faltaParaMinimo =
-                    montoMinimo - totalPagado;
+                decimal faltaParaMinimo = montoMinimo - totalPagado;
 
                 if (faltaParaMinimo < 0)
                 {
@@ -180,7 +139,6 @@
                 }
 
                 <div class="alert alert-warning mb-0">
-
                     <strong>Pendiente de seña.</strong>
 
                     Faltan
@@ -190,29 +148,23 @@
                     </strong>
 
                     para alcanzar el monto mínimo.
-
                 </div>
             }
 
         </div>
-
     </div>
 }
-
 
 @if (reserva != null && saldoPendiente > 0)
 {
     <p>
-
         <a asp-action="Create" asp-route-idReserva="@reserva.IdReserva" class="btn btn-primary">
 
             Registrar Nuevo Pago
 
         </a>
-
     </p>
 }
-
 
 @if (Model.Any())
 {
@@ -221,29 +173,23 @@
         <thead class="table-dark">
 
             <tr>
-
                 <th>#</th>
-
                 <th>Fecha</th>
-
+                <th>Concepto</th>
                 <th>Monto</th>
-
                 <th>Medio de Pago</th>
-
                 <th>Observación</th>
-
+                <th>Estado</th>
                 <th>Acciones</th>
-
             </tr>
 
         </thead>
-
 
         <tbody>
 
             @foreach (var item in Model)
             {
-                <tr>
+                <tr class="@(!item.Estado ? "table-secondary" : "")">
 
                     <td>
                         @item.IdPago
@@ -251,6 +197,10 @@
 
                     <td>
                         @item.FechaPago.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+
+                    <td>
+                        @item.Concepto
                     </td>
 
                     <td>
@@ -270,19 +220,49 @@
                     </td>
 
                     <td>
+                        @if (item.Estado)
+                        {
+                            <span class="badge bg-success">
+                                Activo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                Anulado
+                            </span>
+                        }
+                    </td>
 
-                        <form asp-action="Anular" asp-route-id="@item.IdPago" method="post" class="d-inline">
+                    <td>
 
-                            @Html.AntiForgeryToken()
+                        @if (item.Estado)
+                        {
+                            <a asp-action="Edit" asp-route-id="@item.IdPago" class="btn btn-sm btn-warning">
 
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                    onclick="return confirm('¿Está seguro que desea anular este pago?');">
+                                Editar
 
-                                Anular
+                            </a>
 
-                            </button>
+                            <form asp-action="Anular" asp-route-id="@item.IdPago" method="post" class="d-inline">
 
-                        </form>
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('¿Está seguro que desea anular este pago?');">
+
+                                    Anular
+
+                                </button>
+
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+                                Sin acciones
+                            </span>
+                        }
 
                     </td>
 
@@ -296,12 +276,9 @@
 else
 {
     <div class="alert alert-info">
-
         Esta reserva todavía no registra pagos.
-
     </div>
 }
-
 
 <a asp-controller="Reserva" asp-action="Index" class="btn btn-secondary">
 

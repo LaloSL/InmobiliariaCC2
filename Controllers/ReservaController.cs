@@ -29,14 +29,6 @@ namespace InmobiliariaCC2.Controllers
         }
 
 
-<<<<<<< HEAD
-=======
-        // =====================================================
-        // LISTADO DE RESERVAS
-        // Administrador y Empleado
-        // =====================================================
-
->>>>>>> fa7668c9c426cc8126935536e60479efddc57af3
         [AllowAnonymous]
         public IActionResult Index()
         {
@@ -153,16 +145,11 @@ namespace InmobiliariaCC2.Controllers
                 _repoReserva.Guardar(reserva);
 
 
-                TempData["Mensaje"] =
-                    "Reserva creada exitosamente.";
+                TempData["Mensaje"] = "Reserva creada exitosamente.";
 
 
                 return RedirectToAction(
                     nameof(Index)
-
-                return RedirectToAction(
-                    "Index",
-                    "Inmueble"
                 );
             }
 

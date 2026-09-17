@@ -19,17 +19,20 @@ namespace InmobiliariaCC2.Controllers
             _repoReserva = repoReserva;
         }
 
+
         [HttpGet]
         public IActionResult Index(int idReserva)
         {
-            var reserva = _repoReserva.ObtenerPorIdConDetalles(idReserva);
+            var reserva =
+                _repoReserva.ObtenerPorIdConDetalles(idReserva);
 
             if (reserva == null)
             {
                 return NotFound();
             }
 
-            var pagos = _repoPago.ObtenerPorReserva(idReserva);
+            var pagos =
+                _repoPago.ObtenerPorReserva(idReserva);
 
             decimal totalPagado =
                 _repoPago.ObtenerTotalPagado(idReserva);
@@ -56,7 +59,8 @@ namespace InmobiliariaCC2.Controllers
         [HttpGet]
         public IActionResult Create(int idReserva)
         {
-            var reserva = _repoReserva.ObtenerPorIdConDetalles(idReserva);
+            var reserva =
+                _repoReserva.ObtenerPorIdConDetalles(idReserva);
 
             if (reserva == null)
             {
@@ -101,7 +105,9 @@ namespace InmobiliariaCC2.Controllers
         public IActionResult Create(Pago pago)
         {
             var reserva =
-                _repoReserva.ObtenerPorIdConDetalles(pago.IdReserva);
+                _repoReserva.ObtenerPorIdConDetalles(
+                    pago.IdReserva
+                );
 
             if (reserva == null)
             {
@@ -114,7 +120,9 @@ namespace InmobiliariaCC2.Controllers
             }
 
             decimal totalPagado =
-                _repoPago.ObtenerTotalPagado(pago.IdReserva);
+                _repoPago.ObtenerTotalPagado(
+                    pago.IdReserva
+                );
 
             decimal saldoPendiente =
                 reserva.MontoTotal - totalPagado;
@@ -125,6 +133,15 @@ namespace InmobiliariaCC2.Controllers
                 ModelState.AddModelError(
                     "",
                     "La reserva ya se encuentra totalmente pagada."
+                );
+            }
+
+
+            if (string.IsNullOrWhiteSpace(pago.Concepto))
+            {
+                ModelState.AddModelError(
+                    "Concepto",
+                    "El concepto del pago es obligatorio."
                 );
             }
 
@@ -168,18 +185,22 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
+            // Datos controlados por el servidor
+            pago.Concepto = pago.Concepto.Trim();
             pago.Estado = true;
+            pago.FechaPago = DateTime.Now;
+
 
             int idPago =
                 _repoPago.Guardar(pago);
-
 
 
             decimal nuevoTotalPagado =
                 totalPagado + pago.Monto;
 
             decimal nuevoSaldo =
-                reserva.MontoTotal - nuevoTotalPagado;
+                reserva.MontoTotal -
+                nuevoTotalPagado;
 
 
             if (nuevoSaldo <= 0)
@@ -189,7 +210,8 @@ namespace InmobiliariaCC2.Controllers
                     "La reserva quedó totalmente pagada.";
             }
             else if (
-                nuevoTotalPagado >= reserva.MontoMinimoReserva
+                nuevoTotalPagado >=
+                reserva.MontoMinimoReserva
             )
             {
                 TempData["Mensaje"] =
@@ -216,6 +238,104 @@ namespace InmobiliariaCC2.Controllers
         }
 
 
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var pago =
+                _repoPago.ObtenerPorId(id);
+
+            if (pago == null)
+            {
+                return NotFound();
+            }
+
+
+            if (!pago.Estado)
+            {
+                TempData["Error"] =
+                    "No se puede modificar un pago anulado.";
+
+                return RedirectToAction(
+                    "Index",
+                    new { idReserva = pago.IdReserva }
+                );
+            }
+
+
+            return View(pago);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(
+            int idPago,
+            string concepto)
+        {
+            var pago =
+                _repoPago.ObtenerPorId(idPago);
+
+            if (pago == null)
+            {
+                return NotFound();
+            }
+
+
+            if (!pago.Estado)
+            {
+                TempData["Error"] =
+                    "No se puede modificar un pago anulado.";
+
+                return RedirectToAction(
+                    "Index",
+                    new { idReserva = pago.IdReserva }
+                );
+            }
+
+
+            if (string.IsNullOrWhiteSpace(concepto))
+            {
+                ModelState.AddModelError(
+                    "Concepto",
+                    "El concepto del pago es obligatorio."
+                );
+
+                pago.Concepto = concepto ?? string.Empty;
+
+                return View(pago);
+            }
+
+
+            if (concepto.Trim().Length > 100)
+            {
+                ModelState.AddModelError(
+                    "Concepto",
+                    "El concepto no puede superar los 100 caracteres."
+                );
+
+                pago.Concepto = concepto;
+
+                return View(pago);
+            }
+
+
+            _repoPago.ModificarConcepto(
+                idPago,
+                concepto.Trim()
+            );
+
+
+            TempData["Mensaje"] =
+                "El concepto del pago fue modificado correctamente.";
+
+
+            return RedirectToAction(
+                "Index",
+                new { idReserva = pago.IdReserva }
+            );
+        }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Anular(int id)
@@ -228,16 +348,32 @@ namespace InmobiliariaCC2.Controllers
                 return NotFound();
             }
 
+
+            if (!pago.Estado)
+            {
+                TempData["Error"] =
+                    "El pago ya se encuentra anulado.";
+
+                return RedirectToAction(
+                    "Index",
+                    new { idReserva = pago.IdReserva }
+                );
+            }
+
+
             _repoPago.Anular(id);
+
 
             TempData["Mensaje"] =
                 "El pago fue anulado correctamente.";
+
 
             return RedirectToAction(
                 "Index",
                 new { idReserva = pago.IdReserva }
             );
         }
+
 
         private void CargarResumenReserva(
             Reserva reserva,
@@ -251,13 +387,16 @@ namespace InmobiliariaCC2.Controllers
                 saldoPendiente = 0;
             }
 
+
             decimal faltaParaMinimo =
-                reserva.MontoMinimoReserva - totalPagado;
+                reserva.MontoMinimoReserva -
+                totalPagado;
 
             if (faltaParaMinimo < 0)
             {
                 faltaParaMinimo = 0;
             }
+
 
             ViewBag.Reserva = reserva;
 

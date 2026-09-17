@@ -1,0 +1,118 @@
+@model InmobiliariaCC2.Models.Pago
+
+@{
+    ViewData["Title"] = "Editar Concepto del Pago";
+}
+
+<h2>Editar Concepto del Pago</h2>
+
+<div class="alert alert-info">
+
+    Por seguridad, solamente puede modificarse el
+    <strong>concepto</strong> del pago.
+
+    El monto, la fecha y el medio de pago no pueden alterarse.
+
+</div>
+
+
+<div class="card mb-4">
+
+    <div class="card-header">
+
+        <strong>
+            Pago N.º @Model.IdPago
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <strong>Fecha</strong>
+
+                <p>
+                    @Model.FechaPago.ToString("dd/MM/yyyy HH:mm")
+                </p>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <strong>Monto</strong>
+
+                <p>
+                    @Model.Monto.ToString("C")
+                </p>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <strong>Medio de Pago</strong>
+
+                <p>
+                    @Model.MedioPago
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <form asp-action="Edit" method="post">
+
+            @Html.AntiForgeryToken()
+
+
+            <input type="hidden" name="idPago" value="@Model.IdPago" />
+
+
+            <div class="mb-3">
+
+                <label for="concepto" class="form-label">
+
+                    Concepto
+
+                </label>
+
+                <input type="text" id="concepto" name="concepto" value="@Model.Concepto" maxlength="100"
+                       class="form-control" required />
+
+                <span asp-validation-for="Concepto" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <button type="submit" class="btn btn-success">
+
+                Guardar Concepto
+
+            </button>
+
+
+            <a asp-action="Index" asp-route-idReserva="@Model.IdReserva" class="btn btn-secondary">
+
+                Cancelar
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>

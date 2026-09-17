@@ -15,7 +15,6 @@ namespace InmobiliariaCC2.Repositories
                 );
         }
 
-
         public List<Pago> ObtenerTodos()
         {
             var lista = new List<Pago>();
@@ -26,13 +25,13 @@ namespace InmobiliariaCC2.Repositories
                     SELECT
                         p.IdPago,
                         p.IdReserva,
+                        p.Concepto,
                         p.Monto,
                         p.FechaPago,
                         p.MedioPago,
                         p.Observacion,
                         p.Estado
                     FROM Pago p
-                    WHERE p.Estado = 1
                     ORDER BY p.FechaPago DESC, p.IdPago DESC;";
 
                 using (var command = new MySqlCommand(sql, connection))
@@ -53,6 +52,7 @@ namespace InmobiliariaCC2.Repositories
         }
 
 
+
         public Pago? ObtenerPorId(int id)
         {
             Pago? pago = null;
@@ -63,6 +63,7 @@ namespace InmobiliariaCC2.Repositories
                     SELECT
                         p.IdPago,
                         p.IdReserva,
+                        p.Concepto,
                         p.Monto,
                         p.FechaPago,
                         p.MedioPago,
@@ -90,6 +91,7 @@ namespace InmobiliariaCC2.Repositories
             return pago;
         }
 
+
         public List<Pago> ObtenerPorReserva(int idReserva)
         {
             var lista = new List<Pago>();
@@ -100,6 +102,7 @@ namespace InmobiliariaCC2.Repositories
                     SELECT
                         p.IdPago,
                         p.IdReserva,
+                        p.Concepto,
                         p.Monto,
                         p.FechaPago,
                         p.MedioPago,
@@ -107,7 +110,6 @@ namespace InmobiliariaCC2.Repositories
                         p.Estado
                     FROM Pago p
                     WHERE p.IdReserva = @idReserva
-                      AND p.Estado = 1
                     ORDER BY p.FechaPago ASC, p.IdPago ASC;";
 
                 using (var command = new MySqlCommand(sql, connection))
@@ -141,6 +143,7 @@ namespace InmobiliariaCC2.Repositories
                     INSERT INTO Pago
                     (
                         IdReserva,
+                        Concepto,
                         Monto,
                         FechaPago,
                         MedioPago,
@@ -150,6 +153,7 @@ namespace InmobiliariaCC2.Repositories
                     VALUES
                     (
                         @idReserva,
+                        @concepto,
                         @monto,
                         @fechaPago,
                         @medioPago,
@@ -162,6 +166,11 @@ namespace InmobiliariaCC2.Repositories
                     command.Parameters.AddWithValue(
                         "@idReserva",
                         pago.IdReserva
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@concepto",
+                        pago.Concepto
                     );
 
                     command.Parameters.AddWithValue(
@@ -194,6 +203,34 @@ namespace InmobiliariaCC2.Repositories
                     command.ExecuteNonQuery();
 
                     return (int)command.LastInsertedId;
+                }
+            }
+        }
+
+        public int ModificarConcepto(int idPago, string concepto)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                var sql = @"
+                    UPDATE Pago
+                    SET Concepto = @concepto
+                    WHERE IdPago = @idPago;";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue(
+                        "@concepto",
+                        concepto
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idPago",
+                        idPago
+                    );
+
+                    connection.Open();
+
+                    return command.ExecuteNonQuery();
                 }
             }
         }
@@ -231,6 +268,7 @@ namespace InmobiliariaCC2.Repositories
             }
         }
 
+
         public int Anular(int id)
         {
             using (var connection = new MySqlConnection(_connectionString))
@@ -242,7 +280,10 @@ namespace InmobiliariaCC2.Repositories
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@id", id);
+                    command.Parameters.AddWithValue(
+                        "@id",
+                        id
+                    );
 
                     connection.Open();
 
@@ -255,15 +296,23 @@ namespace InmobiliariaCC2.Repositories
         {
             return new Pago
             {
-                IdPago = reader.GetInt32("IdPago"),
+                IdPago =
+                    reader.GetInt32("IdPago"),
 
-                IdReserva = reader.GetInt32("IdReserva"),
+                IdReserva =
+                    reader.GetInt32("IdReserva"),
 
-                Monto = reader.GetDecimal("Monto"),
+                Concepto =
+                    reader.GetString("Concepto"),
 
-                FechaPago = reader.GetDateTime("FechaPago"),
+                Monto =
+                    reader.GetDecimal("Monto"),
 
-                MedioPago = reader.GetString("MedioPago"),
+                FechaPago =
+                    reader.GetDateTime("FechaPago"),
+
+                MedioPago =
+                    reader.GetString("MedioPago"),
 
                 Observacion =
                     reader.IsDBNull(
@@ -272,7 +321,8 @@ namespace InmobiliariaCC2.Repositories
                     ? null
                     : reader.GetString("Observacion"),
 
-                Estado = reader.GetBoolean("Estado")
+                Estado =
+                    reader.GetBoolean("Estado")
             };
         }
     }
