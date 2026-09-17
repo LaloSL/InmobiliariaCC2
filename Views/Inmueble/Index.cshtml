@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Listado de Inmuebles";
+
+    bool estaLogueado =
+        User.Identity?.IsAuthenticated == true;
 }
 
 <h2>Listado de Inmuebles</h2>
@@ -10,42 +13,101 @@
 {
     <div class="alert alert-success alert-dismissible fade show">
         @TempData["Mensaje"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+        <button type="button" class="btn-close" data-bs-dismiss="alert">
+        </button>
     </div>
 }
 
+
 <p>
+
     @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
     {
-        <a asp-action="Create" class="btn btn-primary">Registrar Nuevo Inmueble</a>
+        <a asp-action="Create" class="btn btn-primary">
+            Registrar Nuevo Inmueble
+        </a>
     }
-    <a asp-action="BuscarDisponibles" class="btn btn-outline-info">🔍 Buscar Disponibles</a>
+
+    <a asp-action="BuscarDisponibles" class="btn btn-outline-info">
+        🔍 Buscar Disponibles
+    </a>
+
 </p>
 
+
 <table class="table table-striped table-hover">
+
     <thead class="table-dark">
+
         <tr>
+
             <th>Dirección</th>
+
             <th>Tipo</th>
+
             <th>Cupo</th>
+
             <th>Precio / Día</th>
-            <th>Propietario</th>
-            <th>Acciones</th>
+
+
+            @if (estaLogueado)
+            {
+                <th>Propietario</th>
+
+                <th>Acciones</th>
+            }
+
         </tr>
+
     </thead>
+
+
     <tbody>
+
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.Direccion</td>
-                <td>@item.Tipo?.Nombre</td>
-                <td>@item.Cupo pnas.</td>
-                <td>$@item.PrecioDia</td>
-                <td>@item.Propietario?.Nombre @item.Propietario?.Apellido</td>
+
                 <td>
-                    <a asp-action="Details" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-info">Detalles</a>
+                    @item.Direccion
                 </td>
+
+                <td>
+                    @item.Tipo?.Nombre
+                </td>
+
+                <td>
+                    @item.Cupo pnas.
+                </td>
+
+                <td>
+                    $@item.PrecioDia
+                </td>
+
+
+                @if (estaLogueado)
+                {
+                    <td>
+                        @item.Propietario?.Nombre
+                        @item.Propietario?.Apellido
+                    </td>
+
+
+                    <td>
+
+                        <a asp-action="Details" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-info">
+
+                            Detalles
+
+                        </a>
+
+                    </td>
+                }
+
             </tr>
         }
+
     </tbody>
+
 </table>

@@ -29,6 +29,14 @@ namespace InmobiliariaCC2.Controllers
         }
 
 
+<<<<<<< HEAD
+=======
+        // =====================================================
+        // LISTADO DE RESERVAS
+        // Administrador y Empleado
+        // =====================================================
+
+>>>>>>> fa7668c9c426cc8126935536e60479efddc57af3
         [AllowAnonymous]
         public IActionResult Index()
         {
@@ -60,7 +68,6 @@ namespace InmobiliariaCC2.Controllers
             return View(lista);
         }
 
-
         [Authorize(Roles = "Administrador,Empleado")]
         [HttpGet]
         public IActionResult Create()
@@ -70,6 +77,8 @@ namespace InmobiliariaCC2.Controllers
             return View();
         }
 
+
+        [HttpPost]
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Empleado")]
@@ -112,6 +121,7 @@ namespace InmobiliariaCC2.Controllers
                     reserva.IdInmueble
                 );
 
+
                 if (inmueble == null)
                 {
                     ModelState.AddModelError(
@@ -119,10 +129,12 @@ namespace InmobiliariaCC2.Controllers
                         "No se encontró el inmueble seleccionado."
                     );
 
+
                     CargarSelects(
                         idTipo,
                         reserva.IdInmueble
                     );
+
 
                     return View(reserva);
                 }
@@ -135,6 +147,9 @@ namespace InmobiliariaCC2.Controllers
                     inmueble.PorcentajeReserva;
 
 
+                reserva.MontoDia = inmueble.PrecioDia;
+
+
                 _repoReserva.Guardar(reserva);
 
 
@@ -144,9 +159,12 @@ namespace InmobiliariaCC2.Controllers
 
                 return RedirectToAction(
                     nameof(Index)
+
+                return RedirectToAction(
+                    "Index",
+                    "Inmueble"
                 );
             }
-
 
             CargarSelects(
                 idTipo,
@@ -157,10 +175,6 @@ namespace InmobiliariaCC2.Controllers
         }
 
 
-        // =====================================================
-        // DETALLE DE RESERVA
-        // Administrador y Empleado
-        // =====================================================
 
         [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Details(int id)
@@ -288,6 +302,7 @@ namespace InmobiliariaCC2.Controllers
 
                     porcentajeReserva =
                         i.PorcentajeReserva,
+
 
                     foto =
                         i.Foto
