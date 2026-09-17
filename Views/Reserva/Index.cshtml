@@ -175,23 +175,31 @@
                         </span>
                     </td>
 
-                    <!-- ACCIONES -->
                     <td>
-                        <a asp-action="Details" asp-route-id="@item.IdReserva" class="btn btn-sm btn-info">
-                            Detalles
-                        </a>
+                        @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
 
-                        <a asp-controller="Pago" asp-action="Index" asp-route-idReserva="@item.IdReserva"
-                           class="btn btn-sm btn-success">
-                            Pagos
-                        </a>
-
-                        @if (item.Estado)
                         {
-                            <a asp-action="FinalizarAnticipadamente" asp-route-id="@item.IdReserva" class="btn btn-sm btn-warning">
-                                Salida Anticipada
+                            <a asp-action="Details" asp-route-id="@item.IdReserva" class="btn btn-sm btn-info">
+                                Detalles
                             </a>
+
+                            <a asp-controller="Pago" asp-action="Index" asp-route-idReserva="@item.IdReserva"
+                               class="btn btn-sm btn-success">
+                                Pagos
+                            </a>
+
+                            @if (item.Estado)
+                            {
+                                <a asp-action="FinalizarAnticipadamente" asp-route-id="@item.IdReserva" class="btn btn-sm btn-warning">
+                                    Salida Anticipada
+                                </a>
+
+                                <a asp-action="Renovar" asp-route-id="@item.IdReserva" class="btn btn-sm btn-primary">
+                                    Renovar
+                                </a>
+                            }
                         }
+
                     </td>
                 }
 

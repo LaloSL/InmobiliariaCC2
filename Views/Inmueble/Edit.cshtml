@@ -1,0 +1,263 @@
+@model InmobiliariaCC2.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Editar Inmueble";
+}
+
+<h2>Editar Inmueble</h2>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+
+        <form asp-action="Edit" asp-route-id="@Model.IdInmueble" method="post" enctype="multipart/form-data">
+
+            @Html.AntiForgeryToken()
+
+            <input asp-for="IdInmueble" type="hidden" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger">
+            </div>
+
+
+            @* =========================================
+               PROPIETARIO
+               ========================================= *@
+
+            <div class="mb-3">
+
+                <label asp-for="IdPropietario" class="form-label">
+                    Propietario
+                </label>
+
+                <select asp-for="IdPropietario" asp-items="ViewBag.Propietarios" class="form-select">
+
+                    <option value="">
+                        -- Seleccionar propietario --
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="IdPropietario" class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="IdTipo" class="form-label">
+                    Tipo de Inmueble
+                </label>
+
+                <select asp-for="IdTipo" asp-items="ViewBag.Tipos" class="form-select">
+
+                    <option value="">
+                        -- Seleccionar tipo --
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="IdTipo" class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="Direccion" class="form-label">
+                    Dirección
+                </label>
+
+                <input asp-for="Direccion" class="form-control" />
+
+                <span asp-validation-for="Direccion" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="Cupo" class="form-label">
+                    Cupo
+                </label>
+
+                <input asp-for="Cupo" type="number" min="1" class="form-control" />
+
+                <span asp-validation-for="Cupo" class="text-danger">
+                </span>
+
+            </div>
+
+
+
+            <div class="mb-3">
+
+                <label asp-for="PrecioDia" class="form-label">
+                    Precio por Día
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        $
+                    </span>
+
+                    <input asp-for="PrecioDia" type="number" step="0.01" min="0.01" class="form-control" />
+
+                </div>
+
+                <span asp-validation-for="PrecioDia" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="PorcentajeReserva" class="form-label">
+                    Porcentaje de Reserva
+                </label>
+
+                <div class="input-group">
+
+                    <input asp-for="PorcentajeReserva" type="number" step="0.01" min="0" max="100"
+                           class="form-control" />
+
+                    <span class="input-group-text">
+                        %
+                    </span>
+
+                </div>
+
+                <span asp-validation-for="PorcentajeReserva" class="text-danger">
+                </span>
+
+                <div class="form-text">
+                    Porcentaje del alquiler que deberá abonarse
+                    al momento de realizar la reserva.
+                </div>
+
+            </div>
+
+
+            <div class="mb-3">
+                <label asp-for="Coordenadas" class="form-label">
+                    Coordenadas
+                </label>
+
+                <input asp-for="Coordenadas" class="form-control" placeholder="Ej.: -33.3012, -66.3378" />
+
+                <span asp-validation-for="Coordenadas" class="text-danger">
+                </span>
+
+                <div class="form-text">
+                    Ingrese latitud y longitud separadas por una coma.
+                    Ejemplo: -33.3012, -66.3378
+                </div>
+            </div>
+
+
+            @* =========================================
+               ESTADO
+               ========================================= *@
+
+            <div class="mb-3">
+
+                <div class="form-check">
+
+                    <input asp-for="Estado" class="form-check-input" />
+
+                    <label asp-for="Estado" class="form-check-label">
+
+                        Inmueble disponible
+
+                    </label>
+
+                </div>
+
+                <div class="form-text">
+                    Si se desactiva, el inmueble dejará de aparecer
+                    entre los inmuebles disponibles para alquilar.
+                </div>
+
+            </div>
+
+
+            @* =========================================
+               FOTO ACTUAL
+               ========================================= *@
+
+            @if (!string.IsNullOrWhiteSpace(Model.Foto))
+            {
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Foto actual
+                    </label>
+
+                    <div>
+
+                        <img src="@Model.Foto" alt="Foto del inmueble" class="img-thumbnail"
+                             style="max-width: 300px; max-height: 220px;" />
+
+                    </div>
+
+                </div>
+            }
+
+
+            @* =========================================
+               NUEVA FOTO
+               ========================================= *@
+
+            <div class="mb-3">
+
+                <label asp-for="FotoFile" class="form-label">
+                    Cambiar Foto
+                </label>
+
+                <input asp-for="FotoFile" type="file" class="form-control" accept="image/*" />
+
+                <span asp-validation-for="FotoFile" class="text-danger">
+                </span>
+
+                <div class="form-text">
+                    Si no selecciona una nueva imagen,
+                    se conservará la foto actual.
+                </div>
+
+            </div>
+
+
+            @* =========================================
+               BOTONES
+               ========================================= *@
+
+            <div class="mt-4">
+
+                <button type="submit" class="btn btn-success">
+
+                    Guardar Cambios
+
+                </button>
+
+                <a asp-action="Index" class="btn btn-secondary">
+
+                    Cancelar
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

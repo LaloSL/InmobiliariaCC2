@@ -7,6 +7,7 @@ namespace InmobiliariaCC2.Models
     {
         public int IdReserva { get; set; }
 
+
         [Required(ErrorMessage = "Debe seleccionar un inquilino.")]
         public int IdInquilino { get; set; }
 
@@ -16,6 +17,7 @@ namespace InmobiliariaCC2.Models
         public int IdInmueble { get; set; }
 
         public Inmueble? Inmueble { get; set; }
+
         public decimal MontoDia { get; set; }
 
         public decimal PorcentajeReserva { get; set; }
@@ -33,6 +35,7 @@ namespace InmobiliariaCC2.Models
 
         public DateTime? FechaTerminacionAnticipada { get; set; }
 
+
         [NotMapped]
         public int CantidadDias
         {
@@ -46,7 +49,6 @@ namespace InmobiliariaCC2.Models
         }
 
 
-
         [NotMapped]
         public decimal MontoTotal
         {
@@ -55,6 +57,7 @@ namespace InmobiliariaCC2.Models
                 return CantidadDias * MontoDia;
             }
         }
+
 
         [NotMapped]
         public decimal MontoMinimoReserva
@@ -65,12 +68,13 @@ namespace InmobiliariaCC2.Models
             }
         }
 
+
         public decimal Multa { get; set; }
 
+        public int? IdReservaOrigen { get; set; }
         public int? IdUsuarioCreacion { get; set; }
 
         public int? IdUsuarioTerminacion { get; set; }
-
 
         public bool Estado { get; set; } = true;
     }

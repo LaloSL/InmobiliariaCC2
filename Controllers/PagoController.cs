@@ -4,6 +4,7 @@ using System.Security.Claims;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
 
+
 namespace InmobiliariaCC2.Controllers
 {
     [Authorize(Roles = "Administrador,Empleado")]
@@ -27,44 +28,64 @@ namespace InmobiliariaCC2.Controllers
             var reserva =
                 _repoReserva.ObtenerPorIdConDetalles(idReserva);
 
+
             if (reserva == null)
             {
                 return NotFound();
             }
 
+
             var pagos =
                 _repoPago.ObtenerPorReserva(idReserva);
+
 
             decimal totalPagado =
                 _repoPago.ObtenerTotalPagado(idReserva);
 
+
             decimal montoAlquiler =
                 reserva.MontoTotal;
+
 
             decimal multa =
                 reserva.Multa;
 
+
             decimal montoTotalAdeudado =
                 montoAlquiler + multa;
 
+
             decimal saldoPendiente =
                 montoTotalAdeudado - totalPagado;
+
 
             if (saldoPendiente < 0)
             {
                 saldoPendiente = 0;
             }
 
-            ViewBag.Reserva = reserva;
-            ViewBag.MontoAlquiler = montoAlquiler;
-            ViewBag.Multa = multa;
-            ViewBag.MontoTotalAdeudado = montoTotalAdeudado;
-            ViewBag.TotalPagado = totalPagado;
-            ViewBag.SaldoPendiente = saldoPendiente;
+
+            ViewBag.Reserva =
+                reserva;
+
+            ViewBag.MontoAlquiler =
+                montoAlquiler;
+
+            ViewBag.Multa =
+                multa;
+
+            ViewBag.MontoTotalAdeudado =
+                montoTotalAdeudado;
+
+            ViewBag.TotalPagado =
+                totalPagado;
+
+            ViewBag.SaldoPendiente =
+                saldoPendiente;
+
 
             return View(pagos);
         }
-
 
         [HttpGet]
         public IActionResult Create(int idReserva)
@@ -72,42 +93,62 @@ namespace InmobiliariaCC2.Controllers
             var reserva =
                 _repoReserva.ObtenerPorIdConDetalles(idReserva);
 
+
             if (reserva == null)
             {
                 return NotFound();
             }
 
+
             decimal totalPagado =
                 _repoPago.ObtenerTotalPagado(idReserva);
 
+
             decimal montoTotalAdeudado =
-                 reserva.MontoTotal + reserva.Multa;
+                reserva.MontoTotal +
+                reserva.Multa;
+
 
             decimal saldoPendiente =
-                montoTotalAdeudado - totalPagado;
+                montoTotalAdeudado -
+                totalPagado;
+
 
             if (saldoPendiente <= 0)
             {
                 TempData["Error"] =
                     "La reserva ya se encuentra totalmente pagada.";
 
+
                 return RedirectToAction(
                     "Index",
-                    new { idReserva = idReserva }
+                    new
+                    {
+                        idReserva = idReserva
+                    }
                 );
             }
 
-            var pago = new Pago
-            {
-                IdReserva = idReserva,
-                FechaPago = DateTime.Now,
-                Estado = true
-            };
+
+            var pago =
+                new Pago
+                {
+                    IdReserva =
+                        idReserva,
+
+                    FechaPago =
+                        DateTime.Now,
+
+                    Estado =
+                        true
+                };
+
 
             CargarResumenReserva(
                 reserva,
                 totalPagado
             );
+
 
             return View(pago);
         }
@@ -122,6 +163,7 @@ namespace InmobiliariaCC2.Controllers
                     pago.IdReserva
                 );
 
+
             if (reserva == null)
             {
                 ModelState.AddModelError(
@@ -129,19 +171,27 @@ namespace InmobiliariaCC2.Controllers
                     "La reserva seleccionada no existe."
                 );
 
+
                 return View(pago);
             }
+
 
             decimal totalPagado =
                 _repoPago.ObtenerTotalPagado(
                     pago.IdReserva
                 );
 
+
             decimal montoTotalAdeudado =
-                reserva.MontoTotal + reserva.Multa;
+                reserva.MontoTotal +
+                reserva.Multa;
+
 
             decimal saldoPendiente =
-                montoTotalAdeudado - totalPagado;
+                montoTotalAdeudado -
+                totalPagado;
+
+
 
 
             if (saldoPendiente <= 0)
@@ -153,7 +203,8 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
-            if (string.IsNullOrWhiteSpace(pago.Concepto))
+            if (string.IsNullOrWhiteSpace(
+                pago.Concepto))
             {
                 ModelState.AddModelError(
                     "Concepto",
@@ -181,7 +232,8 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
-            if (string.IsNullOrWhiteSpace(pago.MedioPago))
+            if (string.IsNullOrWhiteSpace(
+                pago.MedioPago))
             {
                 ModelState.AddModelError(
                     "MedioPago",
@@ -197,30 +249,45 @@ namespace InmobiliariaCC2.Controllers
                     totalPagado
                 );
 
+
                 return View(pago);
             }
 
 
-            pago.Concepto = pago.Concepto.Trim();
-            pago.Estado = true;
-            pago.FechaPago = DateTime.Now;
+            pago.Concepto =
+                pago.Concepto.Trim();
+
+
+            pago.Estado =
+                true;
+
+
+            pago.FechaPago =
+                DateTime.Now;
 
 
             var idUsuarioClaim =
-                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                User.FindFirst(
+                    ClaimTypes.NameIdentifier
+                )?.Value;
 
-            if (int.TryParse(idUsuarioClaim, out int idUsuario))
+
+            if (int.TryParse(
+                idUsuarioClaim,
+                out int idUsuario))
             {
-                pago.IdUsuarioCreacion = idUsuario;
+                pago.IdUsuarioCreacion =
+                    idUsuario;
             }
-
 
             int idPago =
                 _repoPago.Guardar(pago);
 
 
             decimal nuevoTotalPagado =
-                totalPagado + pago.Monto;
+                totalPagado +
+                pago.Monto;
+
 
             decimal nuevoSaldo =
                 montoTotalAdeudado -
@@ -235,8 +302,7 @@ namespace InmobiliariaCC2.Controllers
             }
             else if (
                 nuevoTotalPagado >=
-                reserva.MontoMinimoReserva
-            )
+                reserva.MontoMinimoReserva)
             {
                 TempData["Mensaje"] =
                     $"Pago N.º {idPago} registrado correctamente. " +
@@ -248,6 +314,7 @@ namespace InmobiliariaCC2.Controllers
                     reserva.MontoMinimoReserva -
                     nuevoTotalPagado;
 
+
                 TempData["Mensaje"] =
                     $"Pago N.º {idPago} registrado correctamente. " +
                     $"Todavía faltan {faltaParaMinimo:C} " +
@@ -257,16 +324,448 @@ namespace InmobiliariaCC2.Controllers
 
             return RedirectToAction(
                 "Index",
-                new { idReserva = pago.IdReserva }
+                new
+                {
+                    idReserva =
+                        pago.IdReserva
+                }
             );
         }
 
 
+
+        // ==========================================================
+        // PAGAR MULTA POR TERMINACIÓN ANTICIPADA - GET
+        // ==========================================================
+
+        [HttpGet]
+        [Authorize(Roles = "Administrador,Empleado")]
+        public IActionResult PagarMulta(
+            int idReserva,
+            DateTime fechaTerminacion)
+        {
+            var reserva =
+                _repoReserva.ObtenerPorIdConDetalles(idReserva);
+
+            if (reserva == null)
+            {
+                return NotFound();
+            }
+
+            if (!reserva.Estado)
+            {
+                TempData["Error"] =
+                    "La reserva ya se encuentra finalizada.";
+
+                return RedirectToAction(
+                    "Details",
+                    "Reserva",
+                    new
+                    {
+                        id = idReserva
+                    }
+                );
+            }
+
+            if (fechaTerminacion <= reserva.FechaDesde ||
+                fechaTerminacion >= reserva.FechaHasta)
+            {
+                TempData["Error"] =
+                    "La fecha de terminación anticipada no es válida.";
+
+                return RedirectToAction(
+                    "Details",
+                    "Reserva",
+                    new
+                    {
+                        id = idReserva
+                    }
+                );
+            }
+
+
+            // ------------------------------------------------------
+            // CALCULAR MULTA EN EL SERVIDOR
+            // ------------------------------------------------------
+
+            int diasPactados =
+                (reserva.FechaHasta -
+                 reserva.FechaDesde).Days;
+
+            int diasCumplidos =
+                (fechaTerminacion -
+                 reserva.FechaDesde).Days;
+
+            int diasRestantes =
+                (reserva.FechaHasta -
+                 fechaTerminacion).Days;
+
+
+            decimal costoTotalRestante =
+                diasRestantes *
+                reserva.MontoDia;
+
+
+            decimal multa;
+
+            if (diasCumplidos < (diasPactados / 2.0))
+            {
+                multa =
+                    costoTotalRestante * 0.50m;
+            }
+            else
+            {
+                multa =
+                    costoTotalRestante * 0.25m;
+            }
+
+
+            if (multa <= 0)
+            {
+                TempData["Error"] =
+                    "No fue posible calcular correctamente la multa.";
+
+                return RedirectToAction(
+                    "Details",
+                    "Reserva",
+                    new
+                    {
+                        id = idReserva
+                    }
+                );
+            }
+
+
+            var pago =
+                new Pago
+                {
+                    IdReserva =
+                        idReserva,
+
+                    Concepto =
+                        "Multa por terminación anticipada",
+
+                    Monto =
+                        multa,
+
+                    FechaPago =
+                        DateTime.Now,
+
+                    MedioPago =
+                        string.Empty,
+
+                    Observacion =
+                        null,
+
+                    Estado =
+                        true
+                };
+
+
+            ViewBag.Reserva =
+                reserva;
+
+            ViewBag.FechaTerminacion =
+                fechaTerminacion;
+
+            ViewBag.Multa =
+                multa;
+
+
+            return View(pago);
+        }
+
+
+        // ==========================================================
+        // PAGAR MULTA POR TERMINACIÓN ANTICIPADA - POST
+        // ==========================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Empleado")]
+        public IActionResult PagarMulta(
+            int idReserva,
+            DateTime fechaTerminacion,
+            string medioPago,
+            string? observacion)
+        {
+            // ------------------------------------------------------
+            // BUSCAR RESERVA
+            // ------------------------------------------------------
+
+            var reserva =
+                _repoReserva.ObtenerPorIdConDetalles(
+                    idReserva
+                );
+
+
+            if (reserva == null)
+            {
+                return NotFound();
+            }
+
+
+            // ------------------------------------------------------
+            // VALIDAR QUE SIGA ACTIVA
+            // ------------------------------------------------------
+
+            if (!reserva.Estado)
+            {
+                TempData["Error"] =
+                    "La reserva ya se encuentra finalizada.";
+
+                return RedirectToAction(
+                    "Details",
+                    "Reserva",
+                    new
+                    {
+                        id = idReserva
+                    }
+                );
+            }
+
+
+            // ------------------------------------------------------
+            // VALIDAR FECHA
+            // ------------------------------------------------------
+
+            if (fechaTerminacion <= reserva.FechaDesde ||
+                fechaTerminacion >= reserva.FechaHasta)
+            {
+                TempData["Error"] =
+                    "La fecha de terminación anticipada no es válida.";
+
+                return RedirectToAction(
+                    "Details",
+                    "Reserva",
+                    new
+                    {
+                        id = idReserva
+                    }
+                );
+            }
+
+
+            // ------------------------------------------------------
+            // RECALCULAR MULTA
+            // NUNCA CONFIAMOS EN UN MONTO ENVIADO POR LA VISTA
+            // ------------------------------------------------------
+
+            int diasPactados =
+                (reserva.FechaHasta -
+                 reserva.FechaDesde).Days;
+
+
+            int diasCumplidos =
+                (fechaTerminacion -
+                 reserva.FechaDesde).Days;
+
+
+            int diasRestantes =
+                (reserva.FechaHasta -
+                 fechaTerminacion).Days;
+
+
+            decimal costoTotalRestante =
+                diasRestantes *
+                reserva.MontoDia;
+
+
+            decimal multaCalculada;
+
+
+            if (diasCumplidos < (diasPactados / 2.0))
+            {
+                multaCalculada =
+                    costoTotalRestante *
+                    0.50m;
+            }
+            else
+            {
+                multaCalculada =
+                    costoTotalRestante *
+                    0.25m;
+            }
+
+
+            if (multaCalculada <= 0)
+            {
+                TempData["Error"] =
+                    "No fue posible calcular correctamente la multa.";
+
+                return RedirectToAction(
+                    "Details",
+                    "Reserva",
+                    new
+                    {
+                        id = idReserva
+                    }
+                );
+            }
+
+
+            // ------------------------------------------------------
+            // VALIDAR MEDIO DE PAGO
+            // ------------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(medioPago))
+            {
+                var pagoVista =
+                    new Pago
+                    {
+                        IdReserva =
+                            idReserva,
+
+                        Concepto =
+                            "Multa por terminación anticipada",
+
+                        Monto =
+                            multaCalculada,
+
+                        FechaPago =
+                            DateTime.Now,
+
+                        MedioPago =
+                            string.Empty,
+
+                        Observacion =
+                            observacion,
+
+                        Estado =
+                            true
+                    };
+
+
+                ViewBag.Reserva =
+                    reserva;
+
+                ViewBag.FechaTerminacion =
+                    fechaTerminacion;
+
+                ViewBag.Multa =
+                    multaCalculada;
+
+
+                ModelState.AddModelError(
+                    "MedioPago",
+                    "Debe seleccionar un medio de pago."
+                );
+
+
+                return View(pagoVista);
+            }
+
+
+            // ------------------------------------------------------
+            // OBTENER USUARIO AUTENTICADO
+            // ------------------------------------------------------
+
+            int? idUsuarioActual =
+                null;
+
+
+            var idUsuarioClaim =
+                User.FindFirst(
+                    ClaimTypes.NameIdentifier
+                )?.Value;
+
+
+            if (int.TryParse(
+                idUsuarioClaim,
+                out int idUsuario))
+            {
+                idUsuarioActual =
+                    idUsuario;
+            }
+
+
+            // ------------------------------------------------------
+            // CREAR EL PAGO
+            // ------------------------------------------------------
+
+            var pago =
+                new Pago
+                {
+                    IdReserva =
+                        idReserva,
+
+                    Concepto =
+                        "Multa por terminación anticipada",
+
+                    Monto =
+                        multaCalculada,
+
+                    FechaPago =
+                        DateTime.Now,
+
+                    MedioPago =
+                        medioPago.Trim(),
+
+                    Observacion =
+                        string.IsNullOrWhiteSpace(observacion)
+                            ? null
+                            : observacion.Trim(),
+
+                    Estado =
+                        true,
+
+                    IdUsuarioCreacion =
+                        idUsuarioActual
+                };
+
+
+            // ------------------------------------------------------
+            // GUARDAR PAGO
+            // ------------------------------------------------------
+
+            int idPago =
+                _repoPago.Guardar(
+                    pago
+                );
+
+
+            // ------------------------------------------------------
+            // FINALIZAR RESERVA
+            // SOLAMENTE DESPUÉS DE REGISTRAR LA MULTA
+            // ------------------------------------------------------
+
+            _repoReserva.FinalizarAnticipadamente(
+                idReserva,
+                fechaTerminacion,
+                multaCalculada,
+                idUsuarioActual
+            );
+
+
+            // ------------------------------------------------------
+            // MENSAJE
+            // ------------------------------------------------------
+
+            TempData["Mensaje"] =
+                $"Terminación anticipada registrada correctamente. " +
+                $"Pago N.º {idPago} por multa de " +
+                $"{multaCalculada:C} registrado correctamente.";
+
+
+            // ------------------------------------------------------
+            // VOLVER AL DETALLE
+            // ------------------------------------------------------
+
+            return RedirectToAction(
+                "Details",
+                "Reserva",
+                new
+                {
+                    id = idReserva
+                }
+            );
+        }
         [HttpGet]
         public IActionResult Edit(int id)
         {
             var pago =
                 _repoPago.ObtenerPorId(id);
+
 
             if (pago == null)
             {
@@ -279,9 +778,14 @@ namespace InmobiliariaCC2.Controllers
                 TempData["Error"] =
                     "No se puede modificar un pago anulado.";
 
+
                 return RedirectToAction(
                     "Index",
-                    new { idReserva = pago.IdReserva }
+                    new
+                    {
+                        idReserva =
+                            pago.IdReserva
+                    }
                 );
             }
 
@@ -297,7 +801,10 @@ namespace InmobiliariaCC2.Controllers
             string concepto)
         {
             var pago =
-                _repoPago.ObtenerPorId(idPago);
+                _repoPago.ObtenerPorId(
+                    idPago
+                );
+
 
             if (pago == null)
             {
@@ -310,21 +817,31 @@ namespace InmobiliariaCC2.Controllers
                 TempData["Error"] =
                     "No se puede modificar un pago anulado.";
 
+
                 return RedirectToAction(
                     "Index",
-                    new { idReserva = pago.IdReserva }
+                    new
+                    {
+                        idReserva =
+                            pago.IdReserva
+                    }
                 );
             }
 
 
-            if (string.IsNullOrWhiteSpace(concepto))
+            if (string.IsNullOrWhiteSpace(
+                concepto))
             {
                 ModelState.AddModelError(
                     "Concepto",
                     "El concepto del pago es obligatorio."
                 );
 
-                pago.Concepto = concepto ?? string.Empty;
+
+                pago.Concepto =
+                    concepto ??
+                    string.Empty;
+
 
                 return View(pago);
             }
@@ -337,7 +854,10 @@ namespace InmobiliariaCC2.Controllers
                     "El concepto no puede superar los 100 caracteres."
                 );
 
-                pago.Concepto = concepto;
+
+                pago.Concepto =
+                    concepto;
+
 
                 return View(pago);
             }
@@ -355,7 +875,11 @@ namespace InmobiliariaCC2.Controllers
 
             return RedirectToAction(
                 "Index",
-                new { idReserva = pago.IdReserva }
+                new
+                {
+                    idReserva =
+                        pago.IdReserva
+                }
             );
         }
 
@@ -366,6 +890,7 @@ namespace InmobiliariaCC2.Controllers
         {
             var pago =
                 _repoPago.ObtenerPorId(id);
+
 
             if (pago == null)
             {
@@ -378,20 +903,33 @@ namespace InmobiliariaCC2.Controllers
                 TempData["Error"] =
                     "El pago ya se encuentra anulado.";
 
+
                 return RedirectToAction(
                     "Index",
-                    new { idReserva = pago.IdReserva }
+                    new
+                    {
+                        idReserva =
+                            pago.IdReserva
+                    }
                 );
             }
 
-            int? idUsuarioAnulacion = null;
+            int? idUsuarioAnulacion =
+                null;
+
 
             var idUsuarioClaim =
-                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                User.FindFirst(
+                    ClaimTypes.NameIdentifier
+                )?.Value;
 
-            if (int.TryParse(idUsuarioClaim, out int idUsuario))
+
+            if (int.TryParse(
+                idUsuarioClaim,
+                out int idUsuario))
             {
-                idUsuarioAnulacion = idUsuario;
+                idUsuarioAnulacion =
+                    idUsuario;
             }
 
 
@@ -407,7 +945,11 @@ namespace InmobiliariaCC2.Controllers
 
             return RedirectToAction(
                 "Index",
-                new { idReserva = pago.IdReserva }
+                new
+                {
+                    idReserva =
+                        pago.IdReserva
+                }
             );
         }
 
@@ -417,10 +959,14 @@ namespace InmobiliariaCC2.Controllers
             decimal totalPagado)
         {
             decimal montoTotalAdeudado =
-            reserva.MontoTotal + reserva.Multa;
+                reserva.MontoTotal +
+                reserva.Multa;
+
 
             decimal saldoPendiente =
-                montoTotalAdeudado - totalPagado;
+                montoTotalAdeudado -
+                totalPagado;
+
 
             if (saldoPendiente < 0)
             {
@@ -432,31 +978,44 @@ namespace InmobiliariaCC2.Controllers
                 reserva.MontoMinimoReserva -
                 totalPagado;
 
+
             if (faltaParaMinimo < 0)
             {
                 faltaParaMinimo = 0;
             }
 
 
+            ViewBag.Reserva =
+                reserva;
+
+
             ViewBag.MontoAlquiler =
                 reserva.MontoTotal;
+
 
             ViewBag.Multa =
                 reserva.Multa;
 
+
             ViewBag.MontoTotalAdeudado =
                 montoTotalAdeudado;
+
+
             ViewBag.MontoTotal =
                 reserva.MontoTotal;
+
 
             ViewBag.MontoMinimo =
                 reserva.MontoMinimoReserva;
 
+
             ViewBag.TotalPagado =
                 totalPagado;
 
+
             ViewBag.SaldoPendiente =
                 saldoPendiente;
+
 
             ViewBag.FaltaParaMinimo =
                 faltaParaMinimo;

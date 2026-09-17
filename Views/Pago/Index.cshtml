@@ -8,64 +8,92 @@
     decimal totalPagado = ViewBag.TotalPagado ?? 0m;
     decimal saldoPendiente = ViewBag.SaldoPendiente ?? 0m;
 
-    decimal montoTotal = reserva?.MontoTotal ?? 0m;
-    decimal montoMinimo = reserva?.MontoMinimoReserva ?? 0m;
+    decimal montoAlquiler =
+        ViewBag.MontoAlquiler ?? (reserva?.MontoTotal ?? 0m);
+
+    decimal multa =
+        ViewBag.Multa ?? 0m;
+
+    decimal montoTotalAdeudado =
+        ViewBag.MontoTotalAdeudado ?? montoAlquiler;
+
+    decimal montoMinimo =
+        reserva?.MontoMinimoReserva ?? 0m;
 }
 
 <h2>Pagos de la Reserva</h2>
 
+
 @if (TempData["Mensaje"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show">
+
         @TempData["Mensaje"]
 
         <button type="button" class="btn-close" data-bs-dismiss="alert">
         </button>
+
     </div>
 }
+
 
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show">
+
         @TempData["Error"]
 
         <button type="button" class="btn-close" data-bs-dismiss="alert">
         </button>
+
     </div>
 }
+
 
 @if (reserva != null)
 {
     <div class="card mb-4">
 
         <div class="card-header">
+
             <strong>
                 Reserva N.º @reserva.IdReserva
             </strong>
+
         </div>
 
+
         <div class="card-body">
+
+            <!-- DATOS DE LA RESERVA -->
 
             <div class="row">
 
                 <div class="col-md-4">
+
                     <strong>Inquilino</strong>
 
                     <p>
                         @reserva.Inquilino?.Nombre
                         @reserva.Inquilino?.Apellido
                     </p>
+
                 </div>
 
+
                 <div class="col-md-4">
+
                     <strong>Inmueble</strong>
 
                     <p>
                         @reserva.Inmueble?.Direccion
                     </p>
+
                 </div>
 
+
                 <div class="col-md-4">
+
                     <strong>Período</strong>
 
                     <p>
@@ -73,65 +101,187 @@
                         -
                         @reserva.FechaHasta.ToString("dd/MM/yyyy")
                     </p>
+
                 </div>
 
             </div>
 
+
+            @if (reserva.FechaTerminacionAnticipada.HasValue)
+            {
+                <div class="alert alert-warning">
+
+                    <strong>
+                        Reserva finalizada anticipadamente.
+                    </strong>
+
+                    Fecha real de salida:
+
+                    <strong>
+                        @reserva.FechaTerminacionAnticipada.Value.ToString("dd/MM/yyyy")
+                    </strong>
+
+                </div>
+            }
+
+
             <hr />
+
+
+            <!-- RESUMEN FINANCIERO -->
 
             <div class="row">
 
-                <div class="col-md-3">
-                    <strong>Monto Total</strong>
+                <div class="col-md-2">
+
+                    <strong>
+                        Monto Alquiler
+                    </strong>
 
                     <p class="fs-5">
-                        @montoTotal.ToString("C")
+                        @montoAlquiler.ToString("C")
                     </p>
+
                 </div>
 
-                <div class="col-md-3">
-                    <strong>Mínimo Reserva</strong>
+
+                <div class="col-md-2">
+
+                    <strong>
+                        Mínimo Reserva
+                    </strong>
 
                     <p class="fs-5">
                         @montoMinimo.ToString("C")
                     </p>
+
                 </div>
 
-                <div class="col-md-3">
-                    <strong>Total Pagado</strong>
+
+                <div class="col-md-2">
+
+                    <strong>
+                        Multa
+                    </strong>
+
+                    @if (multa > 0)
+                    {
+                        <p class="fs-5 text-warning">
+                            @multa.ToString("C")
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="fs-5">
+                            @multa.ToString("C")
+                        </p>
+                    }
+
+                </div>
+
+
+                <div class="col-md-2">
+
+                    <strong>
+                        Total Adeudado
+                    </strong>
+
+                    <p class="fs-5 fw-bold">
+                        @montoTotalAdeudado.ToString("C")
+                    </p>
+
+                </div>
+
+
+                <div class="col-md-2">
+
+                    <strong>
+                        Total Pagado
+                    </strong>
 
                     <p class="fs-5 text-success">
                         @totalPagado.ToString("C")
                     </p>
+
                 </div>
 
-                <div class="col-md-3">
-                    <strong>Saldo Pendiente</strong>
+
+                <div class="col-md-2">
+
+                    <strong>
+                        Saldo Pendiente
+                    </strong>
 
                     <p class="fs-5 text-danger">
                         @saldoPendiente.ToString("C")
                     </p>
+
                 </div>
 
             </div>
 
-            @if (totalPagado >= montoTotal && montoTotal > 0)
+
+            <!-- ESTADO FINANCIERO -->
+
+            @if (
+                totalPagado >= montoTotalAdeudado &&
+                montoTotalAdeudado > 0
+            )
             {
                 <div class="alert alert-success mb-0">
-                    <strong>Pago completo.</strong>
-                    La reserva se encuentra totalmente pagada.
+
+                    <strong>
+                        Pago completo.
+                    </strong>
+
+                    La reserva y cualquier multa asociada
+                    se encuentran totalmente pagadas.
+
                 </div>
             }
-            else if (totalPagado >= montoMinimo && montoMinimo > 0)
+            else if (multa > 0)
+            {
+                <div class="alert alert-warning mb-0">
+
+                    <strong>
+                        Saldo pendiente.
+                    </strong>
+
+                    La reserva posee una multa por terminación
+                    anticipada de
+
+                    <strong>
+                        @multa.ToString("C")
+                    </strong>.
+
+                    El saldo total pendiente es
+
+                    <strong>
+                        @saldoPendiente.ToString("C")
+                    </strong>.
+
+                </div>
+            }
+            else if (
+                totalPagado >= montoMinimo &&
+                montoMinimo > 0
+            )
             {
                 <div class="alert alert-success mb-0">
-                    <strong>Monto mínimo alcanzado.</strong>
-                    La seña requerida para la reserva está cubierta.
+
+                    <strong>
+                        Monto mínimo alcanzado.
+                    </strong>
+
+                    La seña requerida para la reserva
+                    está cubierta.
+
                 </div>
             }
             else
             {
-                decimal faltaParaMinimo = montoMinimo - totalPagado;
+                decimal faltaParaMinimo =
+                    montoMinimo - totalPagado;
 
                 if (faltaParaMinimo < 0)
                 {
@@ -139,7 +289,10 @@
                 }
 
                 <div class="alert alert-warning mb-0">
-                    <strong>Pendiente de seña.</strong>
+
+                    <strong>
+                        Pendiente de seña.
+                    </strong>
 
                     Faltan
 
@@ -148,23 +301,36 @@
                     </strong>
 
                     para alcanzar el monto mínimo.
+
                 </div>
             }
 
         </div>
+
     </div>
 }
 
-@if (reserva != null && saldoPendiente > 0)
+
+<!-- REGISTRAR NUEVO PAGO -->
+
+@if (
+    reserva != null &&
+    saldoPendiente > 0
+)
 {
     <p>
+
         <a asp-action="Create" asp-route-idReserva="@reserva.IdReserva" class="btn btn-primary">
 
             Registrar Nuevo Pago
 
         </a>
+
     </p>
 }
+
+
+<!-- LISTADO DE PAGOS -->
 
 @if (Model.Any())
 {
@@ -173,17 +339,27 @@
         <thead class="table-dark">
 
             <tr>
+
                 <th>#</th>
+
                 <th>Fecha</th>
+
                 <th>Concepto</th>
+
                 <th>Monto</th>
+
                 <th>Medio de Pago</th>
+
                 <th>Observación</th>
+
                 <th>Estado</th>
+
                 <th>Acciones</th>
+
             </tr>
 
         </thead>
+
 
         <tbody>
 
@@ -195,31 +371,42 @@
                         @item.IdPago
                     </td>
 
+
                     <td>
                         @item.FechaPago.ToString("dd/MM/yyyy HH:mm")
                     </td>
+
 
                     <td>
                         @item.Concepto
                     </td>
 
+
                     <td>
+
                         <strong>
                             @item.Monto.ToString("C")
                         </strong>
+
                     </td>
+
 
                     <td>
                         @item.MedioPago
                     </td>
 
+
                     <td>
+
                         @(string.IsNullOrWhiteSpace(item.Observacion)
                             ? "-"
                             : item.Observacion)
+
                     </td>
 
+
                     <td>
+
                         @if (item.Estado)
                         {
                             <span class="badge bg-success">
@@ -232,7 +419,9 @@
                                 Anulado
                             </span>
                         }
+
                     </td>
+
 
                     <td>
 
@@ -243,6 +432,7 @@
                                 Editar
 
                             </a>
+
 
                             <form asp-action="Anular" asp-route-id="@item.IdPago" method="post" class="d-inline">
 
@@ -276,9 +466,12 @@
 else
 {
     <div class="alert alert-info">
+
         Esta reserva todavía no registra pagos.
+
     </div>
 }
+
 
 <a asp-controller="Reserva" asp-action="Index" class="btn btn-secondary">
 

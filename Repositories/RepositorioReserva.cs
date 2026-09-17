@@ -70,7 +70,6 @@ namespace InmobiliariaCC2.Repositories
             }
         }
 
-
         public List<Reserva> ObtenerTodas()
         {
             var lista = new List<Reserva>();
@@ -79,12 +78,15 @@ namespace InmobiliariaCC2.Repositories
             {
                 var sql = @"SELECT
                                 r.IdReserva,
+                                r.IdReservaOrigen,
                                 r.MontoDia,
                                 r.PorcentajeReserva,
                                 r.FechaDesde,
                                 r.FechaHasta,
                                 r.FechaTerminacionAnticipada,
                                 r.Multa,
+                                r.IdUsuarioCreacion,
+                                r.IdUsuarioTerminacion,
                                 r.Estado,
 
                                 i.Nombre AS InquilinoNombre,
@@ -115,6 +117,12 @@ namespace InmobiliariaCC2.Repositories
                                 IdReserva =
                                     reader.GetInt32("IdReserva"),
 
+                                IdReservaOrigen =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("IdReservaOrigen"))
+                                        ? null
+                                        : reader.GetInt32("IdReservaOrigen"),
+
                                 MontoDia =
                                     reader.GetDecimal("MontoDia"),
 
@@ -136,6 +144,18 @@ namespace InmobiliariaCC2.Repositories
 
                                 Multa =
                                     reader.GetDecimal("Multa"),
+
+                                IdUsuarioCreacion =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("IdUsuarioCreacion"))
+                                        ? null
+                                        : reader.GetInt32("IdUsuarioCreacion"),
+
+                                IdUsuarioTerminacion =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("IdUsuarioTerminacion"))
+                                        ? null
+                                        : reader.GetInt32("IdUsuarioTerminacion"),
 
                                 Estado =
                                     reader.GetBoolean("Estado"),
@@ -176,6 +196,7 @@ namespace InmobiliariaCC2.Repositories
                         PorcentajeReserva,
                         FechaDesde,
                         FechaHasta,
+                        IdReservaOrigen,
                         IdUsuarioCreacion
                     )
                     VALUES
@@ -186,6 +207,7 @@ namespace InmobiliariaCC2.Repositories
                         @porcentajeReserva,
                         @fechaDesde,
                         @fechaHasta,
+                        @idReservaOrigen,
                         @idUsuarioCreacion
                     );";
 
@@ -222,17 +244,23 @@ namespace InmobiliariaCC2.Repositories
                     );
 
                     command.Parameters.AddWithValue(
+                        "@idReservaOrigen",
+                        (object?)reserva.IdReservaOrigen ?? DBNull.Value
+                    );
+
+                    command.Parameters.AddWithValue(
                         "@idUsuarioCreacion",
                         (object?)reserva.IdUsuarioCreacion ?? DBNull.Value
                     );
 
                     connection.Open();
 
-                    return command.ExecuteNonQuery();
+                    command.ExecuteNonQuery();
+
+                    return (int)command.LastInsertedId;
                 }
             }
         }
-
         public Reserva? ObtenerPorIdConDetalles(int id)
         {
             Reserva? reserva = null;
@@ -241,12 +269,15 @@ namespace InmobiliariaCC2.Repositories
             {
                 var sql = @"SELECT
                                 r.IdReserva,
+                                r.IdReservaOrigen,
                                 r.MontoDia,
                                 r.PorcentajeReserva,
                                 r.FechaDesde,
                                 r.FechaHasta,
                                 r.FechaTerminacionAnticipada,
                                 r.Multa,
+                                r.IdUsuarioCreacion,
+                                r.IdUsuarioTerminacion,
                                 r.Estado,
 
                                 i.IdInquilino,
@@ -283,6 +314,12 @@ namespace InmobiliariaCC2.Repositories
                                 IdReserva =
                                     reader.GetInt32("IdReserva"),
 
+                                IdReservaOrigen =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("IdReservaOrigen"))
+                                        ? null
+                                        : reader.GetInt32("IdReservaOrigen"),
+
                                 MontoDia =
                                     reader.GetDecimal("MontoDia"),
 
@@ -304,6 +341,18 @@ namespace InmobiliariaCC2.Repositories
 
                                 Multa =
                                     reader.GetDecimal("Multa"),
+
+                                IdUsuarioCreacion =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("IdUsuarioCreacion"))
+                                        ? null
+                                        : reader.GetInt32("IdUsuarioCreacion"),
+
+                                IdUsuarioTerminacion =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("IdUsuarioTerminacion"))
+                                        ? null
+                                        : reader.GetInt32("IdUsuarioTerminacion"),
 
                                 Estado =
                                     reader.GetBoolean("Estado"),
@@ -348,7 +397,6 @@ namespace InmobiliariaCC2.Repositories
 
             return reserva;
         }
-
 
         public int FinalizarAnticipadamente(
             int idReserva,

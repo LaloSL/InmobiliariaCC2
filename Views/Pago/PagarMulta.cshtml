@@ -1,0 +1,262 @@
+@model InmobiliariaCC2.Models.Pago
+
+@{
+    ViewData["Title"] = "Pagar Multa";
+
+    var reserva =
+        ViewBag.Reserva as InmobiliariaCC2.Models.Reserva;
+
+    DateTime fechaTerminacion =
+        ViewBag.FechaTerminacion ?? DateTime.MinValue;
+
+    decimal multa =
+        ViewBag.Multa ?? 0m;
+}
+
+
+<h2>Terminación Anticipada</h2>
+
+
+@if (ViewData.ModelState.ErrorCount > 0)
+{
+    <div class="alert alert-danger" asp-validation-summary="All">
+    </div>
+}
+
+
+@if (reserva != null)
+{
+    <div class="card mb-4">
+
+        <div class="card-header">
+
+            <strong>
+                Reserva N.º @reserva.IdReserva
+            </strong>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Inquilino:</strong><br />
+
+                        @reserva.Inquilino?.Nombre
+                        @reserva.Inquilino?.Apellido
+                    </p>
+
+
+                    <p>
+                        <strong>Inmueble:</strong><br />
+
+                        @reserva.Inmueble?.Direccion
+                    </p>
+
+
+                    <p>
+                        <strong>Período original:</strong><br />
+
+                        @reserva.FechaDesde.ToString("dd/MM/yyyy")
+                        al
+                        @reserva.FechaHasta.ToString("dd/MM/yyyy")
+                    </p>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Fecha real de salida:</strong><br />
+
+                        @fechaTerminacion.ToString("dd/MM/yyyy")
+                    </p>
+
+
+                    <p>
+                        <strong>Monto diario:</strong><br />
+
+                        @reserva.MontoDia.ToString("C")
+                    </p>
+
+
+                    <p>
+                        <strong>Multa por terminación anticipada:</strong><br />
+
+                        <span class="fs-4 text-danger">
+                            @multa.ToString("C")
+                        </span>
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<div class="alert alert-warning">
+
+    <strong>Atención:</strong>
+
+    para finalizar anticipadamente la reserva debe registrarse
+    el pago completo de la multa.
+
+    Si el pago no se realiza, la reserva continuará activa
+    hasta su fecha de finalización original.
+
+</div>
+
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <strong>
+                    Registrar pago de la multa
+                </strong>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <form asp-action="PagarMulta" method="post">
+
+                    @Html.AntiForgeryToken()
+
+
+                    <input asp-for="IdReserva" type="hidden" />
+
+                    <input type="hidden" name="fechaTerminacion" value="@fechaTerminacion.ToString("yyyy-MM-dd")" />
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Concepto
+                        </label>
+
+                        <input type="text" class="form-control" value="Multa por terminación anticipada" readonly />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Monto a pagar
+                        </label>
+
+                        <input type="text" class="form-control fw-bold" value="@multa.ToString("C")" readonly />
+
+                        <div class="form-text">
+
+                            El importe fue calculado automáticamente
+                            según la fecha de salida anticipada.
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label asp-for="MedioPago" class="form-label">
+
+                            Medio de Pago
+
+                        </label>
+
+
+                        <select asp-for="MedioPago" class="form-select" required>
+
+                            <option value="">
+                                -- Seleccionar medio de pago --
+                            </option>
+
+                            <option value="Efectivo">
+                                Efectivo
+                            </option>
+
+                            <option value="Transferencia">
+                                Transferencia
+                            </option>
+
+                            <option value="Tarjeta">
+                                Tarjeta
+                            </option>
+
+                            <option value="Otro">
+                                Otro
+                            </option>
+
+                        </select>
+
+
+                        <span asp-validation-for="MedioPago" class="text-danger">
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="mb-3">
+
+                        <label asp-for="Observacion" class="form-label">
+
+                            Observación
+
+                        </label>
+
+
+                        <textarea asp-for="Observacion" class="form-control" rows="3" maxlength="255"
+                                  placeholder="Observación opcional del pago"></textarea>
+
+
+                        <span asp-validation-for="Observacion" class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('¿Confirma el pago de la multa y la terminación anticipada de la reserva?');">
+
+                        Pagar Multa y Finalizar Reserva
+
+                    </button>
+
+
+                    <a asp-controller="Reserva" asp-action="Details" asp-route-id="@Model.IdReserva"
+                       class="btn btn-secondary">
+
+                        Cancelar
+
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

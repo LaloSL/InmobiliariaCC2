@@ -1,0 +1,77 @@
+@model InmobiliariaCC2.Models.Usuario
+
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<h2>Mi Perfil</h2>
+
+<div class="card mt-3">
+
+    <div class="card-header">
+        <strong>Datos del Usuario</strong>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <p>
+                    <strong>Nombre</strong><br />
+                    @Model.Nombre
+                </p>
+
+                <p>
+                    <strong>Email</strong><br />
+                    @Model.Email
+                </p>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <p>
+                    <strong>Rol</strong><br />
+
+                    <span class="badge bg-primary">
+                        @Model.Rol
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Estado</strong><br />
+
+                    @if (Model.Estado)
+                    {
+                        <span class="badge bg-success">
+                            Activo
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            Inactivo
+                        </span>
+                    }
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="mt-3">
+
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+
+        Volver
+
+    </a>
+
+</div>

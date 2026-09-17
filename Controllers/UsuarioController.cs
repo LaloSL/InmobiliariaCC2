@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -81,6 +82,33 @@ namespace InmobiliariaCC2.Controllers
 
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult Perfil()
+        {
+            var idUsuarioClaim =
+                User.FindFirst(
+                    ClaimTypes.NameIdentifier
+                )?.Value;
+
+            if (!int.TryParse(
+                idUsuarioClaim,
+                out int idUsuario))
+            {
+                return Unauthorized();
+            }
+
+            var usuario =
+                repositorio.ObtenerPorId(idUsuario);
+
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            return View(usuario);
         }
 
         [HttpPost]

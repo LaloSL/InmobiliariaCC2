@@ -1,0 +1,141 @@
+@model InmobiliariaCC2.Models.Reserva
+
+@{
+    ViewData["Title"] = "Renovar Reserva";
+
+    var original =
+        ViewBag.ReservaOriginal
+        as InmobiliariaCC2.Models.Reserva;
+}
+
+<h2>Renovar Reserva</h2>
+
+@if (original != null)
+{
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>
+                Reserva Original N.º @original.IdReserva
+            </strong>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <strong>Inquilino</strong>
+
+                    <p>
+                        @original.Inquilino?.Nombre
+                        @original.Inquilino?.Apellido
+                    </p>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Inmueble</strong>
+
+                    <p>
+                        @original.Inmueble?.Direccion
+                    </p>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Período Original</strong>
+
+                    <p>
+                        @original.FechaDesde.ToString("dd/MM/yyyy")
+                        -
+                        @original.FechaHasta.ToString("dd/MM/yyyy")
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+}
+
+
+<div class="alert alert-info">
+    La renovación generará una
+    <strong>nueva reserva</strong>
+    vinculada con la reserva original.
+</div>
+
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <form asp-action="Renovar" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input asp-for="IdReservaOrigen" type="hidden" />
+
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3">
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="FechaDesde" class="form-label">
+
+                    Nueva Fecha Desde
+
+                </label>
+
+                <input asp-for="FechaDesde" type="date" class="form-control" required />
+
+                <span asp-validation-for="FechaDesde" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="FechaHasta" class="form-label">
+
+                    Nueva Fecha Hasta
+
+                </label>
+
+                <input asp-for="FechaHasta" type="date" class="form-control" required />
+
+                <span asp-validation-for="FechaHasta" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <button type="submit" class="btn btn-success">
+
+                Confirmar Renovación
+
+            </button>
+
+
+            @if (original != null)
+            {
+                <a asp-action="Details" asp-route-id="@original.IdReserva" class="btn btn-secondary">
+
+                    Cancelar
+
+                </a>
+            }
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}
