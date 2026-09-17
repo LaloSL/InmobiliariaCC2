@@ -25,19 +25,11 @@ namespace InmobiliariaCC2.Controllers
             _repoInquilino = repoInquilino;
         }
 
-
-        // =====================================================
-        // INDEX - SOLICITUDES
-        // Administrador y Empleado
-        // =====================================================
-
         [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Index()
         {
             var solicitudes = _repoSolicitud.ObtenerTodas();
 
-            // Calculamos cuáles solicitudes pendientes
-            // todavía pueden convertirse en una reserva.
             var disponibilidad = new Dictionary<int, bool>();
 
             foreach (var solicitud in solicitudes)
@@ -59,10 +51,6 @@ namespace InmobiliariaCC2.Controllers
             return View(solicitudes);
         }
 
-
-        // =====================================================
-        // GET - FORMULARIO PÚBLICO DE SOLICITUD
-        // =====================================================
 
         [AllowAnonymous]
         [HttpGet]
@@ -103,10 +91,6 @@ namespace InmobiliariaCC2.Controllers
             return View(solicitud);
         }
 
-
-        // =====================================================
-        // POST - GUARDAR SOLICITUD PÚBLICA
-        // =====================================================
 
         [AllowAnonymous]
         [HttpPost]
@@ -158,19 +142,11 @@ namespace InmobiliariaCC2.Controllers
         }
 
 
-        // =====================================================
-        // POST - CONFIRMAR RESERVA
-        // Administrador y Empleado
-        // =====================================================
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult ConfirmarReserva(int id)
         {
-            // -------------------------------------------------
-            // 1. Buscar la solicitud
-            // -------------------------------------------------
 
             var solicitud =
                 _repoSolicitud.ObtenerPorId(id);
@@ -180,12 +156,6 @@ namespace InmobiliariaCC2.Controllers
                 return NotFound();
             }
 
-
-            // -------------------------------------------------
-            // 2. Solamente una solicitud pendiente
-            //    puede confirmarse
-            // -------------------------------------------------
-
             if (solicitud.Estado != "Pendiente")
             {
                 TempData["Error"] =
@@ -194,11 +164,6 @@ namespace InmobiliariaCC2.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-
-            // -------------------------------------------------
-            // 3. Validar nuevamente las fechas
-            // -------------------------------------------------
-
             if (solicitud.FechaHasta <= solicitud.FechaDesde)
             {
                 TempData["Error"] =
@@ -206,14 +171,6 @@ namespace InmobiliariaCC2.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-
-
-            // -------------------------------------------------
-            // 4. COMPROBAR NUEVAMENTE DISPONIBILIDAD
-            //
-            // Aunque el botón estuviera habilitado,
-            // volvemos a consultar la base de datos.
-            // -------------------------------------------------
 
             bool ocupado =
                 _repoReserva.InmuebleOcupado(
@@ -231,11 +188,6 @@ namespace InmobiliariaCC2.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-
-            // -------------------------------------------------
-            // 5. Buscar el inmueble
-            // -------------------------------------------------
-
             var inmueble =
                 _repoInmueble.ObtenerPorId(
                     solicitud.IdInmueble
@@ -249,20 +201,11 @@ namespace InmobiliariaCC2.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-
-            // -------------------------------------------------
-            // 6. Buscar al inquilino por DNI
-            // -------------------------------------------------
-
             var inquilino =
                 _repoInquilino.ObtenerPorDni(
                     solicitud.Dni
                 );
 
-
-            // -------------------------------------------------
-            // 7. Si no existe, crear el inquilino
-            // -------------------------------------------------
 
             int idInquilino;
 
@@ -302,15 +245,6 @@ namespace InmobiliariaCC2.Controllers
                     inquilino.IdInquilino;
             }
 
-
-            // -------------------------------------------------
-            // 8. Crear la RESERVA REAL
-            //
-            // El precio se obtiene del inmueble.
-            // No utilizamos ningún precio enviado
-            // por el visitante.
-            // -------------------------------------------------
-
             var reserva = new Reserva
             {
                 IdInquilino = idInquilino,
@@ -330,11 +264,6 @@ namespace InmobiliariaCC2.Controllers
                 Estado = true
             };
 
-
-            // -------------------------------------------------
-            // 9. Guardar Reserva
-            // -------------------------------------------------
-
             int resultado =
                 _repoReserva.Guardar(reserva);
 
@@ -346,10 +275,6 @@ namespace InmobiliariaCC2.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-
-            // -------------------------------------------------
-            // 10. Marcar solicitud como CONFIRMADA
-            // -------------------------------------------------
 
             _repoSolicitud.CambiarEstado(
                 solicitud.IdSolicitud,
@@ -365,11 +290,6 @@ namespace InmobiliariaCC2.Controllers
         }
 
 
-        // =====================================================
-        // POST - RECHAZAR SOLICITUD
-        // Administrador y Empleado
-        // =====================================================
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Empleado")]
@@ -382,10 +302,6 @@ namespace InmobiliariaCC2.Controllers
             {
                 return NotFound();
             }
-
-
-            // Solamente podemos rechazar
-            // solicitudes que todavía estén pendientes.
 
             if (solicitud.Estado != "Pendiente")
             {

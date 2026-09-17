@@ -20,8 +20,13 @@ namespace InmobiliariaCC2.Models
 
         public string? Coordenadas { get; set; }
 
-        [Range(0.01, 1000000.00, ErrorMessage = "Ingrese un precio válido por día.")]
+        [Range(0.01, 1000000.00,
+            ErrorMessage = "Ingrese un precio válido por día.")]
         public decimal PrecioDia { get; set; }
+
+        [Range(0.01, 100.00,
+            ErrorMessage = "El porcentaje de reserva debe ser mayor a 0 y menor o igual a 100.")]
+        public decimal PorcentajeReserva { get; set; }
 
         [Required(ErrorMessage = "Debe asignar un propietario.")]
         public int IdPropietario { get; set; }
@@ -29,7 +34,6 @@ namespace InmobiliariaCC2.Models
         public Propietario? Propietario { get; set; }
 
         public bool Estado { get; set; } = true;
-
 
         public string? Foto { get; set; }
 

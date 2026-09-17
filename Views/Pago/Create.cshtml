@@ -1,0 +1,264 @@
+@model InmobiliariaCC2.Models.Pago
+
+@{
+    ViewData["Title"] = "Registrar Pago";
+
+    var reserva = ViewBag.Reserva as InmobiliariaCC2.Models.Reserva;
+
+    decimal montoTotal = ViewBag.MontoTotal ?? 0m;
+    decimal montoMinimo = ViewBag.MontoMinimo ?? 0m;
+    decimal totalPagado = ViewBag.TotalPagado ?? 0m;
+    decimal saldoPendiente = ViewBag.SaldoPendiente ?? 0m;
+    decimal faltaParaMinimo = ViewBag.FaltaParaMinimo ?? 0m;
+}
+
+<h2>Registrar Pago</h2>
+
+@if (ViewData.ModelState.ErrorCount > 0)
+{
+    <div class="alert alert-danger" asp-validation-summary="All"></div>
+}
+
+@if (reserva != null)
+{
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>
+                Resumen de la Reserva N.º @reserva.IdReserva
+            </strong>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Inquilino:</strong><br />
+
+                        @reserva.Inquilino?.Nombre
+                        @reserva.Inquilino?.Apellido
+                    </p>
+
+                    <p>
+                        <strong>Inmueble:</strong><br />
+
+                        @reserva.Inmueble?.Direccion
+                    </p>
+
+                    <p>
+                        <strong>Período:</strong><br />
+
+                        @reserva.FechaDesde.ToString("dd/MM/yyyy")
+                        al
+                        @reserva.FechaHasta.ToString("dd/MM/yyyy")
+                    </p>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Monto total:</strong><br />
+
+                        @montoTotal.ToString("C")
+                    </p>
+
+                    <p>
+                        <strong>Monto mínimo para reservar:</strong><br />
+
+                        @montoMinimo.ToString("C")
+                    </p>
+
+                    <p>
+                        <strong>Total pagado:</strong><br />
+
+                        <span class="text-success">
+                            @totalPagado.ToString("C")
+                        </span>
+                    </p>
+
+                    <p>
+                        <strong>Saldo pendiente:</strong><br />
+
+                        <span class="text-danger">
+                            @saldoPendiente.ToString("C")
+                        </span>
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            @if (faltaParaMinimo > 0)
+            {
+                <div class="alert alert-warning mb-0">
+
+                    Faltan
+
+                    <strong>
+                        @faltaParaMinimo.ToString("C")
+                    </strong>
+
+                    para alcanzar el monto mínimo requerido
+                    para confirmar la reserva.
+
+                </div>
+            }
+            else if (saldoPendiente > 0)
+            {
+                <div class="alert alert-success mb-0">
+
+                    El monto mínimo de reserva ya fue alcanzado.
+
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success mb-0">
+
+                    La reserva se encuentra totalmente pagada.
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+}
+
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <form asp-action="Create" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input asp-for="IdReserva" type="hidden" />
+
+
+            <div class="mb-3">
+
+                <label asp-for="Monto" class="form-label">
+
+                    Monto del Pago
+
+                </label>
+
+                <input asp-for="Monto" type="number" step="0.01" min="0.01" class="form-control" required />
+
+                <span asp-validation-for="Monto" class="text-danger">
+                </span>
+
+                <div class="form-text">
+
+                    Saldo pendiente:
+                    <strong>
+                        @saldoPendiente.ToString("C")
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="FechaPago" class="form-label">
+
+                    Fecha del Pago
+
+                </label>
+
+                <input asp-for="FechaPago" type="datetime-local" class="form-control" required />
+
+                <span asp-validation-for="FechaPago" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="MedioPago" class="form-label">
+
+                    Medio de Pago
+
+                </label>
+
+                <select asp-for="MedioPago" class="form-select" required>
+
+                    <option value="">
+                        -- Seleccionar Medio de Pago --
+                    </option>
+
+                    <option value="Efectivo">
+                        Efectivo
+                    </option>
+
+                    <option value="Transferencia">
+                        Transferencia
+                    </option>
+
+                    <option value="Tarjeta">
+                        Tarjeta
+                    </option>
+
+                    <option value="Otro">
+                        Otro
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="MedioPago" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="Observacion" class="form-label">
+
+                    Observación
+
+                </label>
+
+                <textarea asp-for="Observacion" class="form-control" rows="3" placeholder="Observación opcional">
+                </textarea>
+
+                <span asp-validation-for="Observacion" class="text-danger">
+                </span>
+
+            </div>
+
+
+            <button type="submit" class="btn btn-success">
+
+                Registrar Pago
+
+            </button>
+
+
+            <a asp-action="Index" asp-route-idReserva="@Model.IdReserva" class="btn btn-secondary">
+
+                Volver
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -59,7 +59,7 @@ namespace InmobiliariaCC2.Controllers
                 return View();
             }
 
-            // 5. Crear Claims
+
             var claims = new List<Claim>
     {
         new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
@@ -68,19 +68,18 @@ namespace InmobiliariaCC2.Controllers
         new Claim(ClaimTypes.Role, usuario.Rol)
     };
 
-            // 6. Crear identidad
+
             var claimsIdentity = new ClaimsIdentity(
                 claims,
                 CookieAuthenticationDefaults.AuthenticationScheme
             );
 
-            // 7. Generar cookie de autenticación
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity)
             );
 
-            // 8. Redirigir al Home
+
             return RedirectToAction("Index", "Home");
         }
 

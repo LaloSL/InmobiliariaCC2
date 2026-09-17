@@ -1,7 +1,6 @@
 using MySql.Data.MySqlClient;
 using InmobiliariaCC2.Models;
 
-
 namespace InmobiliariaCC2.Repositories
 {
     public class RepositorioInmueble
@@ -16,6 +15,7 @@ namespace InmobiliariaCC2.Repositories
                 );
         }
 
+
         public List<Inmueble> ObtenerTodos()
         {
             var lista = new List<Inmueble>();
@@ -28,6 +28,7 @@ namespace InmobiliariaCC2.Repositories
                                 i.Cupo,
                                 i.Coordenadas,
                                 i.PrecioDia,
+                                i.PorcentajeReserva,
                                 i.Estado,
                                 i.Foto,
                                 t.IdTipo,
@@ -36,8 +37,10 @@ namespace InmobiliariaCC2.Repositories
                                 p.Nombre AS PropietarioNombre,
                                 p.Apellido AS PropietarioApellido
                             FROM Inmueble i
-                            INNER JOIN TipoInmueble t ON i.IdTipo = t.IdTipo
-                            INNER JOIN Propietario p ON i.IdPropietario = p.IdPropietario
+                            INNER JOIN TipoInmueble t
+                                ON i.IdTipo = t.IdTipo
+                            INNER JOIN Propietario p
+                                ON i.IdPropietario = p.IdPropietario
                             WHERE i.Estado = 1;";
 
                 using (var command = new MySqlCommand(sql, connection))
@@ -57,6 +60,7 @@ namespace InmobiliariaCC2.Repositories
             return lista;
         }
 
+
         public Inmueble? ObtenerPorId(int id)
         {
             Inmueble? inmueble = null;
@@ -69,6 +73,7 @@ namespace InmobiliariaCC2.Repositories
                                 i.Cupo,
                                 i.Coordenadas,
                                 i.PrecioDia,
+                                i.PorcentajeReserva,
                                 i.Estado,
                                 i.Foto,
                                 i.IdTipo,
@@ -78,20 +83,26 @@ namespace InmobiliariaCC2.Repositories
                                 p.Apellido AS PropietarioApellido,
                                 p.Email AS PropietarioEmail
                             FROM Inmueble i
-                            INNER JOIN TipoInmueble t ON i.IdTipo = t.IdTipo
-                            INNER JOIN Propietario p ON i.IdPropietario = p.IdPropietario
+                            INNER JOIN TipoInmueble t
+                                ON i.IdTipo = t.IdTipo
+                            INNER JOIN Propietario p
+                                ON i.IdPropietario = p.IdPropietario
                             WHERE i.IdInmueble = @id;";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
+
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            inmueble = MapearInmuebleCompleto(reader, incluirEmail: true);
+                            inmueble = MapearInmuebleCompleto(
+                                reader,
+                                incluirEmail: true
+                            );
                         }
                     }
                 }
@@ -100,52 +111,92 @@ namespace InmobiliariaCC2.Repositories
             return inmueble;
         }
 
+
         public int Guardar(Inmueble inmueble)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 var sql = @"INSERT INTO Inmueble
-                                (
-                                    Direccion,
-                                    Cupo,
-                                    IdTipo,
-                                    Coordenadas,
-                                    PrecioDia,
-                                    IdPropietario,
-                                    Estado,
-                                    Foto
-                                )
+                            (
+                                Direccion,
+                                Cupo,
+                                IdTipo,
+                                Coordenadas,
+                                PrecioDia,
+                                PorcentajeReserva,
+                                IdPropietario,
+                                Estado,
+                                Foto
+                            )
                             VALUES
-                                (
-                                    @direccion,
-                                    @cupo,
-                                    @idTipo,
-                                    @coordenadas,
-                                    @precioDia,
-                                    @idPropietario,
-                                    1,
-                                    @foto
-                                );
+                            (
+                                @direccion,
+                                @cupo,
+                                @idTipo,
+                                @coordenadas,
+                                @precioDia,
+                                @porcentajeReserva,
+                                @idPropietario,
+                                1,
+                                @foto
+                            );
+
                             SELECT LAST_INSERT_ID();";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@direccion", inmueble.Direccion);
-                    command.Parameters.AddWithValue("@cupo", inmueble.Cupo);
-                    command.Parameters.AddWithValue("@idTipo", inmueble.IdTipo);
-                    command.Parameters.AddWithValue("@coordenadas", (object?)inmueble.Coordenadas ?? DBNull.Value);
-                    command.Parameters.AddWithValue("@precioDia", inmueble.PrecioDia);
-                    command.Parameters.AddWithValue("@idPropietario", inmueble.IdPropietario);
-                    command.Parameters.AddWithValue("@foto", (object?)inmueble.Foto ?? DBNull.Value);
+                    command.Parameters.AddWithValue(
+                        "@direccion",
+                        inmueble.Direccion
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@cupo",
+                        inmueble.Cupo
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idTipo",
+                        inmueble.IdTipo
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@coordenadas",
+                        (object?)inmueble.Coordenadas ?? DBNull.Value
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@precioDia",
+                        inmueble.PrecioDia
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@porcentajeReserva",
+                        inmueble.PorcentajeReserva
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idPropietario",
+                        inmueble.IdPropietario
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@foto",
+                        (object?)inmueble.Foto ?? DBNull.Value
+                    );
 
                     connection.Open();
 
-                    var insertedId = Convert.ToInt32(command.ExecuteScalar());
+                    var insertedId =
+                        Convert.ToInt32(command.ExecuteScalar());
+
                     inmueble.IdInmueble = insertedId;
+
                     return insertedId;
                 }
             }
         }
+
 
         public int Actualizar(Inmueble inmueble)
         {
@@ -157,43 +208,89 @@ namespace InmobiliariaCC2.Repositories
                                 IdTipo = @idTipo,
                                 Coordenadas = @coordenadas,
                                 PrecioDia = @precioDia,
+                                PorcentajeReserva = @porcentajeReserva,
                                 IdPropietario = @idPropietario,
                                 Foto = @foto
                             WHERE IdInmueble = @idInmueble;";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@idInmueble", inmueble.IdInmueble);
-                    command.Parameters.AddWithValue("@direccion", inmueble.Direccion);
-                    command.Parameters.AddWithValue("@cupo", inmueble.Cupo);
-                    command.Parameters.AddWithValue("@idTipo", inmueble.IdTipo);
-                    command.Parameters.AddWithValue("@coordenadas", (object?)inmueble.Coordenadas ?? DBNull.Value);
-                    command.Parameters.AddWithValue("@precioDia", inmueble.PrecioDia);
-                    command.Parameters.AddWithValue("@idPropietario", inmueble.IdPropietario);
-                    command.Parameters.AddWithValue("@foto", (object?)inmueble.Foto ?? DBNull.Value);
+                    command.Parameters.AddWithValue(
+                        "@idInmueble",
+                        inmueble.IdInmueble
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@direccion",
+                        inmueble.Direccion
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@cupo",
+                        inmueble.Cupo
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idTipo",
+                        inmueble.IdTipo
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@coordenadas",
+                        (object?)inmueble.Coordenadas ?? DBNull.Value
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@precioDia",
+                        inmueble.PrecioDia
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@porcentajeReserva",
+                        inmueble.PorcentajeReserva
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idPropietario",
+                        inmueble.IdPropietario
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@foto",
+                        (object?)inmueble.Foto ?? DBNull.Value
+                    );
 
                     connection.Open();
+
                     return command.ExecuteNonQuery();
                 }
             }
         }
+
 
         public int Baja(int id)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
-                var sql = @"UPDATE Inmueble SET Estado = 0 WHERE IdInmueble = @id;";
+                var sql = @"UPDATE Inmueble
+                            SET Estado = 0
+                            WHERE IdInmueble = @id;";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
+
                     connection.Open();
+
                     return command.ExecuteNonQuery();
                 }
             }
         }
 
-        public List<Inmueble> BuscarDisponibles(DateTime desde, DateTime hasta)
+        public List<Inmueble> BuscarDisponibles(
+            DateTime desde,
+            DateTime hasta
+        )
         {
             var lista = new List<Inmueble>();
 
@@ -205,6 +302,7 @@ namespace InmobiliariaCC2.Repositories
                                 i.Cupo,
                                 i.Coordenadas,
                                 i.PrecioDia,
+                                i.PorcentajeReserva,
                                 i.Estado,
                                 i.Foto,
                                 t.IdTipo,
@@ -213,8 +311,10 @@ namespace InmobiliariaCC2.Repositories
                                 p.Nombre AS PropietarioNombre,
                                 p.Apellido AS PropietarioApellido
                             FROM Inmueble i
-                            INNER JOIN TipoInmueble t ON i.IdTipo = t.IdTipo
-                            INNER JOIN Propietario p ON i.IdPropietario = p.IdPropietario
+                            INNER JOIN TipoInmueble t
+                                ON i.IdTipo = t.IdTipo
+                            INNER JOIN Propietario p
+                                ON i.IdPropietario = p.IdPropietario
                             WHERE i.Estado = 1
                               AND i.IdInmueble NOT IN
                               (
@@ -229,8 +329,15 @@ namespace InmobiliariaCC2.Repositories
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@desde", desde);
-                    command.Parameters.AddWithValue("@hasta", hasta);
+                    command.Parameters.AddWithValue(
+                        "@desde",
+                        desde
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@hasta",
+                        hasta
+                    );
 
                     connection.Open();
 
@@ -238,7 +345,9 @@ namespace InmobiliariaCC2.Repositories
                     {
                         while (reader.Read())
                         {
-                            lista.Add(MapearInmuebleCompleto(reader));
+                            lista.Add(
+                                MapearInmuebleCompleto(reader)
+                            );
                         }
                     }
                 }
@@ -247,44 +356,91 @@ namespace InmobiliariaCC2.Repositories
             return lista;
         }
 
-        #region Métodos Auxiliares de Mapeo
-        private static Inmueble MapearInmuebleCompleto(MySqlDataReader reader, bool incluirEmail = false)
+
+        private static Inmueble MapearInmuebleCompleto(
+            MySqlDataReader reader,
+            bool incluirEmail = false
+        )
         {
             var inmueble = new Inmueble
             {
-                IdInmueble = reader.GetInt32("IdInmueble"),
-                Direccion = reader.GetString("Direccion"),
-                Cupo = reader.GetInt32("Cupo"),
-                Coordenadas = reader.IsDBNull(reader.GetOrdinal("Coordenadas"))
+                IdInmueble =
+                    reader.GetInt32("IdInmueble"),
+
+                Direccion =
+                    reader.GetString("Direccion"),
+
+                Cupo =
+                    reader.GetInt32("Cupo"),
+
+                Coordenadas =
+                    reader.IsDBNull(
+                        reader.GetOrdinal("Coordenadas")
+                    )
                     ? null
                     : reader.GetString("Coordenadas"),
-                PrecioDia = reader.GetDecimal("PrecioDia"),
-                Estado = reader.GetBoolean("Estado"),
-                Foto = reader.IsDBNull(reader.GetOrdinal("Foto"))
+
+                PrecioDia =
+                    reader.GetDecimal("PrecioDia"),
+
+                PorcentajeReserva =
+                    reader.GetDecimal("PorcentajeReserva"),
+
+                Estado =
+                    reader.GetBoolean("Estado"),
+
+                Foto =
+                    reader.IsDBNull(
+                        reader.GetOrdinal("Foto")
+                    )
                     ? null
                     : reader.GetString("Foto"),
-                IdTipo = reader.GetInt32("IdTipo"),
+
+                IdTipo =
+                    reader.GetInt32("IdTipo"),
+
                 Tipo = new TipoInmueble
                 {
-                    IdTipo = reader.GetInt32("IdTipo"),
-                    Nombre = reader.GetString("TipoNombre")
+                    IdTipo =
+                        reader.GetInt32("IdTipo"),
+
+                    Nombre =
+                        reader.GetString("TipoNombre")
                 },
-                IdPropietario = reader.GetInt32("IdPropietario"),
+
+                IdPropietario =
+                    reader.GetInt32("IdPropietario"),
+
                 Propietario = new Propietario
                 {
-                    IdPropietario = reader.GetInt32("IdPropietario"),
-                    Nombre = reader.GetString("PropietarioNombre"),
-                    Apellido = reader.GetString("PropietarioApellido")
+                    IdPropietario =
+                        reader.GetInt32("IdPropietario"),
+
+                    Nombre =
+                        reader.GetString(
+                            "PropietarioNombre"
+                        ),
+
+                    Apellido =
+                        reader.GetString(
+                            "PropietarioApellido"
+                        )
                 }
             };
 
-            if (incluirEmail && !reader.IsDBNull(reader.GetOrdinal("PropietarioEmail")))
+            if (
+                incluirEmail &&
+                !reader.IsDBNull(
+                    reader.GetOrdinal("PropietarioEmail")
+                )
+            )
             {
-                inmueble.Propietario.Email = reader.GetString("PropietarioEmail");
+                inmueble.Propietario!.Email =
+                    reader.GetString("PropietarioEmail");
             }
 
             return inmueble;
         }
-        #endregion
+
     }
 }

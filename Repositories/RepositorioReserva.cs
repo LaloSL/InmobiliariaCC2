@@ -15,6 +15,7 @@ namespace InmobiliariaCC2.Repositories
                 );
         }
 
+
         public bool InmuebleOcupado(
             int idInmueble,
             DateTime desde,
@@ -69,6 +70,7 @@ namespace InmobiliariaCC2.Repositories
             }
         }
 
+
         public List<Reserva> ObtenerTodas()
         {
             var lista = new List<Reserva>();
@@ -78,6 +80,7 @@ namespace InmobiliariaCC2.Repositories
                 var sql = @"SELECT
                                 r.IdReserva,
                                 r.MontoDia,
+                                r.PorcentajeReserva,
                                 r.FechaDesde,
                                 r.FechaHasta,
                                 r.FechaTerminacionAnticipada,
@@ -114,6 +117,9 @@ namespace InmobiliariaCC2.Repositories
 
                                 MontoDia =
                                     reader.GetDecimal("MontoDia"),
+
+                                PorcentajeReserva =
+                                    reader.GetDecimal("PorcentajeReserva"),
 
                                 FechaDesde =
                                     reader.GetDateTime("FechaDesde"),
@@ -157,26 +163,29 @@ namespace InmobiliariaCC2.Repositories
             return lista;
         }
 
+
         public int Guardar(Reserva reserva)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 var sql = @"INSERT INTO Reserva
-                                (
-                                    IdInquilino,
-                                    IdInmueble,
-                                    MontoDia,
-                                    FechaDesde,
-                                    FechaHasta
-                                )
+                            (
+                                IdInquilino,
+                                IdInmueble,
+                                MontoDia,
+                                PorcentajeReserva,
+                                FechaDesde,
+                                FechaHasta
+                            )
                             VALUES
-                                (
-                                    @idInquilino,
-                                    @idInmueble,
-                                    @montoDia,
-                                    @fechaDesde,
-                                    @fechaHasta
-                                );";
+                            (
+                                @idInquilino,
+                                @idInmueble,
+                                @montoDia,
+                                @porcentajeReserva,
+                                @fechaDesde,
+                                @fechaHasta
+                            );";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -193,6 +202,11 @@ namespace InmobiliariaCC2.Repositories
                     command.Parameters.AddWithValue(
                         "@montoDia",
                         reserva.MontoDia
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@porcentajeReserva",
+                        reserva.PorcentajeReserva
                     );
 
                     command.Parameters.AddWithValue(
@@ -221,6 +235,7 @@ namespace InmobiliariaCC2.Repositories
                 var sql = @"SELECT
                                 r.IdReserva,
                                 r.MontoDia,
+                                r.PorcentajeReserva,
                                 r.FechaDesde,
                                 r.FechaHasta,
                                 r.FechaTerminacionAnticipada,
@@ -263,6 +278,9 @@ namespace InmobiliariaCC2.Repositories
 
                                 MontoDia =
                                     reader.GetDecimal("MontoDia"),
+
+                                PorcentajeReserva =
+                                    reader.GetDecimal("PorcentajeReserva"),
 
                                 FechaDesde =
                                     reader.GetDateTime("FechaDesde"),
@@ -323,6 +341,7 @@ namespace InmobiliariaCC2.Repositories
 
             return reserva;
         }
+
 
         public int FinalizarAnticipadamente(
             int idReserva,

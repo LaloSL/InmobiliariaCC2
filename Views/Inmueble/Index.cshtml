@@ -15,7 +15,10 @@
 }
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Registrar Nuevo Inmueble</a>
+    @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
+    {
+        <a asp-action="Create" class="btn btn-primary">Registrar Nuevo Inmueble</a>
+    }
     <a asp-action="BuscarDisponibles" class="btn btn-outline-info">🔍 Buscar Disponibles</a>
 </p>
 
