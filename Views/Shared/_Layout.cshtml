@@ -228,10 +228,43 @@
 
                             <span class="nav-link text-light">
 
-                                Hola, @User.Identity.Name
-                                (@User.FindFirst(
-                                    System.Security.Claims.ClaimTypes.Role
-                                )?.Value)
+                               @{
+    var avatarUsuario = User.FindFirst("Avatar")?.Value;
+    var rolUsuario = User.FindFirst(
+        System.Security.Claims.ClaimTypes.Role
+    )?.Value;
+}
+
+<div class="d-flex align-items-center gap-2">
+
+    @if (!string.IsNullOrWhiteSpace(avatarUsuario))
+    {
+        <img src="@avatarUsuario"
+             alt="Avatar"
+             class="rounded-circle border"
+             style="width: 36px;
+                    height: 36px;
+                    object-fit: cover;" />
+    }
+    else
+    {
+        <div class="rounded-circle bg-secondary text-white
+                    d-flex align-items-center justify-content-center"
+             style="width: 36px;
+                    height: 36px;
+                    font-size: 15px;
+                    font-weight: bold;">
+
+            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+
+        </div>
+    }
+
+    <span>
+        Hola, @User.Identity?.Name (@rolUsuario)
+    </span>
+
+</div>
 
                             </span>
 

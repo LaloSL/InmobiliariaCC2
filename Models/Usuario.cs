@@ -23,5 +23,6 @@ namespace InmobiliariaCC2.Models
         public string Rol { get; set; } = "";
 
         public bool Estado { get; set; } = true;
+        public string? Avatar { get; set; }
     }
 }
