@@ -169,23 +169,25 @@ namespace InmobiliariaCC2.Repositories
             using (var connection = new MySqlConnection(_connectionString))
             {
                 var sql = @"INSERT INTO Reserva
-                            (
-                                IdInquilino,
-                                IdInmueble,
-                                MontoDia,
-                                PorcentajeReserva,
-                                FechaDesde,
-                                FechaHasta
-                            )
-                            VALUES
-                            (
-                                @idInquilino,
-                                @idInmueble,
-                                @montoDia,
-                                @porcentajeReserva,
-                                @fechaDesde,
-                                @fechaHasta
-                            );";
+                    (
+                        IdInquilino,
+                        IdInmueble,
+                        MontoDia,
+                        PorcentajeReserva,
+                        FechaDesde,
+                        FechaHasta,
+                        IdUsuarioCreacion
+                    )
+                    VALUES
+                    (
+                        @idInquilino,
+                        @idInmueble,
+                        @montoDia,
+                        @porcentajeReserva,
+                        @fechaDesde,
+                        @fechaHasta,
+                        @idUsuarioCreacion
+                    );";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -217,6 +219,11 @@ namespace InmobiliariaCC2.Repositories
                     command.Parameters.AddWithValue(
                         "@fechaHasta",
                         reserva.FechaHasta
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idUsuarioCreacion",
+                        (object?)reserva.IdUsuarioCreacion ?? DBNull.Value
                     );
 
                     connection.Open();
@@ -346,16 +353,18 @@ namespace InmobiliariaCC2.Repositories
         public int FinalizarAnticipadamente(
             int idReserva,
             DateTime fechaTerminacion,
-            decimal multa)
+            decimal multa,
+            int? idUsuarioTerminacion)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 var sql = @"UPDATE Reserva
-                            SET
-                                FechaTerminacionAnticipada = @fechaTerminacion,
-                                Multa = @multa,
-                                Estado = 0
-                            WHERE IdReserva = @idReserva;";
+                        SET
+                            FechaTerminacionAnticipada = @fechaTerminacion,
+                            Multa = @multa,
+                            IdUsuarioTerminacion = @idUsuarioTerminacion,
+                            Estado = 0
+                        WHERE IdReserva = @idReserva;";
 
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -367,6 +376,11 @@ namespace InmobiliariaCC2.Repositories
                     command.Parameters.AddWithValue(
                         "@multa",
                         multa
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@idUsuarioTerminacion",
+                        (object?)idUsuarioTerminacion ?? DBNull.Value
                     );
 
                     command.Parameters.AddWithValue(

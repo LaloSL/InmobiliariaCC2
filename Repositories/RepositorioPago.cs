@@ -15,6 +15,7 @@ namespace InmobiliariaCC2.Repositories
                 );
         }
 
+
         public List<Pago> ObtenerTodos()
         {
             var lista = new List<Pago>();
@@ -30,6 +31,8 @@ namespace InmobiliariaCC2.Repositories
                         p.FechaPago,
                         p.MedioPago,
                         p.Observacion,
+                        p.IdUsuarioCreacion,
+                        p.IdUsuarioAnulacion,
                         p.Estado
                     FROM Pago p
                     ORDER BY p.FechaPago DESC, p.IdPago DESC;";
@@ -50,9 +53,6 @@ namespace InmobiliariaCC2.Repositories
 
             return lista;
         }
-
-
-
         public Pago? ObtenerPorId(int id)
         {
             Pago? pago = null;
@@ -68,6 +68,8 @@ namespace InmobiliariaCC2.Repositories
                         p.FechaPago,
                         p.MedioPago,
                         p.Observacion,
+                        p.IdUsuarioCreacion,
+                        p.IdUsuarioAnulacion,
                         p.Estado
                     FROM Pago p
                     WHERE p.IdPago = @id;";
@@ -107,6 +109,8 @@ namespace InmobiliariaCC2.Repositories
                         p.FechaPago,
                         p.MedioPago,
                         p.Observacion,
+                        p.IdUsuarioCreacion,
+                        p.IdUsuarioAnulacion,
                         p.Estado
                     FROM Pago p
                     WHERE p.IdReserva = @idReserva
@@ -148,6 +152,7 @@ namespace InmobiliariaCC2.Repositories
                         FechaPago,
                         MedioPago,
                         Observacion,
+                        IdUsuarioCreacion,
                         Estado
                     )
                     VALUES
@@ -158,6 +163,7 @@ namespace InmobiliariaCC2.Repositories
                         @fechaPago,
                         @medioPago,
                         @observacion,
+                        @idUsuarioCreacion,
                         @estado
                     );";
 
@@ -194,6 +200,11 @@ namespace InmobiliariaCC2.Repositories
                     );
 
                     command.Parameters.AddWithValue(
+                        "@idUsuarioCreacion",
+                        (object?)pago.IdUsuarioCreacion ?? DBNull.Value
+                    );
+
+                    command.Parameters.AddWithValue(
                         "@estado",
                         pago.Estado
                     );
@@ -206,6 +217,8 @@ namespace InmobiliariaCC2.Repositories
                 }
             }
         }
+
+
 
         public int ModificarConcepto(int idPago, string concepto)
         {
@@ -234,6 +247,7 @@ namespace InmobiliariaCC2.Repositories
                 }
             }
         }
+
 
 
         public decimal ObtenerTotalPagado(int idReserva)
@@ -269,13 +283,17 @@ namespace InmobiliariaCC2.Repositories
         }
 
 
-        public int Anular(int id)
+        public int Anular(
+            int id,
+            int? idUsuarioAnulacion)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 var sql = @"
                     UPDATE Pago
-                    SET Estado = 0
+                    SET
+                        Estado = 0,
+                        IdUsuarioAnulacion = @idUsuarioAnulacion
                     WHERE IdPago = @id;";
 
                 using (var command = new MySqlCommand(sql, connection))
@@ -285,12 +303,18 @@ namespace InmobiliariaCC2.Repositories
                         id
                     );
 
+                    command.Parameters.AddWithValue(
+                        "@idUsuarioAnulacion",
+                        (object?)idUsuarioAnulacion ?? DBNull.Value
+                    );
+
                     connection.Open();
 
                     return command.ExecuteNonQuery();
                 }
             }
         }
+
 
         private Pago MapearPago(MySqlDataReader reader)
         {
@@ -320,6 +344,20 @@ namespace InmobiliariaCC2.Repositories
                     )
                     ? null
                     : reader.GetString("Observacion"),
+
+                IdUsuarioCreacion =
+                    reader.IsDBNull(
+                        reader.GetOrdinal("IdUsuarioCreacion")
+                    )
+                    ? null
+                    : reader.GetInt32("IdUsuarioCreacion"),
+
+                IdUsuarioAnulacion =
+                    reader.IsDBNull(
+                        reader.GetOrdinal("IdUsuarioAnulacion")
+                    )
+                    ? null
+                    : reader.GetInt32("IdUsuarioAnulacion"),
 
                 Estado =
                     reader.GetBoolean("Estado")

@@ -36,6 +36,9 @@ namespace InmobiliariaCC2.Models
         [StringLength(255)]
         public string? Observacion { get; set; }
 
+        public int? IdUsuarioCreacion { get; set; }
+
+        public int? IdUsuarioAnulacion { get; set; }
 
         public bool Estado { get; set; } = true;
     }

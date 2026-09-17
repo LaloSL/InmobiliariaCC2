@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
+
 
 namespace InmobiliariaCC2.Controllers
 {
@@ -71,7 +73,6 @@ namespace InmobiliariaCC2.Controllers
 
 
         [HttpPost]
-        [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Create(
@@ -133,13 +134,21 @@ namespace InmobiliariaCC2.Controllers
 
 
                 reserva.MontoDia =
-                    inmueble.PrecioDia;
+                        inmueble.PrecioDia;
 
                 reserva.PorcentajeReserva =
                     inmueble.PorcentajeReserva;
 
 
-                reserva.MontoDia = inmueble.PrecioDia;
+
+
+                var idUsuarioClaim =
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (int.TryParse(idUsuarioClaim, out int idUsuario))
+                {
+                    reserva.IdUsuarioCreacion = idUsuario;
+                }
 
 
                 _repoReserva.Guardar(reserva);
@@ -248,10 +257,26 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
+            // ==========================================
+            // AUDITORÍA - USUARIO QUE FINALIZA
+            // ==========================================
+
+            int? idUsuarioTerminacion = null;
+
+            var idUsuarioClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(idUsuarioClaim, out int idUsuario))
+            {
+                idUsuarioTerminacion = idUsuario;
+            }
+
+
             _repoReserva.FinalizarAnticipadamente(
                 idReserva,
                 fechaTerminacion,
-                multa
+                multa,
+                idUsuarioTerminacion
             );
 
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using InmobiliariaCC2.Models;
 using InmobiliariaCC2.Repositories;
 
@@ -37,11 +38,17 @@ namespace InmobiliariaCC2.Controllers
             decimal totalPagado =
                 _repoPago.ObtenerTotalPagado(idReserva);
 
-            decimal montoTotal =
+            decimal montoAlquiler =
                 reserva.MontoTotal;
 
+            decimal multa =
+                reserva.Multa;
+
+            decimal montoTotalAdeudado =
+                montoAlquiler + multa;
+
             decimal saldoPendiente =
-                montoTotal - totalPagado;
+                montoTotalAdeudado - totalPagado;
 
             if (saldoPendiente < 0)
             {
@@ -49,6 +56,9 @@ namespace InmobiliariaCC2.Controllers
             }
 
             ViewBag.Reserva = reserva;
+            ViewBag.MontoAlquiler = montoAlquiler;
+            ViewBag.Multa = multa;
+            ViewBag.MontoTotalAdeudado = montoTotalAdeudado;
             ViewBag.TotalPagado = totalPagado;
             ViewBag.SaldoPendiente = saldoPendiente;
 
@@ -70,8 +80,11 @@ namespace InmobiliariaCC2.Controllers
             decimal totalPagado =
                 _repoPago.ObtenerTotalPagado(idReserva);
 
+            decimal montoTotalAdeudado =
+                 reserva.MontoTotal + reserva.Multa;
+
             decimal saldoPendiente =
-                reserva.MontoTotal - totalPagado;
+                montoTotalAdeudado - totalPagado;
 
             if (saldoPendiente <= 0)
             {
@@ -124,8 +137,11 @@ namespace InmobiliariaCC2.Controllers
                     pago.IdReserva
                 );
 
+            decimal montoTotalAdeudado =
+                reserva.MontoTotal + reserva.Multa;
+
             decimal saldoPendiente =
-                reserva.MontoTotal - totalPagado;
+                montoTotalAdeudado - totalPagado;
 
 
             if (saldoPendiente <= 0)
@@ -185,10 +201,18 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
-            // Datos controlados por el servidor
             pago.Concepto = pago.Concepto.Trim();
             pago.Estado = true;
             pago.FechaPago = DateTime.Now;
+
+
+            var idUsuarioClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(idUsuarioClaim, out int idUsuario))
+            {
+                pago.IdUsuarioCreacion = idUsuario;
+            }
 
 
             int idPago =
@@ -199,7 +223,7 @@ namespace InmobiliariaCC2.Controllers
                 totalPagado + pago.Monto;
 
             decimal nuevoSaldo =
-                reserva.MontoTotal -
+                montoTotalAdeudado -
                 nuevoTotalPagado;
 
 
@@ -360,8 +384,21 @@ namespace InmobiliariaCC2.Controllers
                 );
             }
 
+            int? idUsuarioAnulacion = null;
 
-            _repoPago.Anular(id);
+            var idUsuarioClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(idUsuarioClaim, out int idUsuario))
+            {
+                idUsuarioAnulacion = idUsuario;
+            }
+
+
+            _repoPago.Anular(
+                id,
+                idUsuarioAnulacion
+            );
 
 
             TempData["Mensaje"] =
@@ -379,8 +416,11 @@ namespace InmobiliariaCC2.Controllers
             Reserva reserva,
             decimal totalPagado)
         {
+            decimal montoTotalAdeudado =
+            reserva.MontoTotal + reserva.Multa;
+
             decimal saldoPendiente =
-                reserva.MontoTotal - totalPagado;
+                montoTotalAdeudado - totalPagado;
 
             if (saldoPendiente < 0)
             {
@@ -398,8 +438,14 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
-            ViewBag.Reserva = reserva;
+            ViewBag.MontoAlquiler =
+                reserva.MontoTotal;
 
+            ViewBag.Multa =
+                reserva.Multa;
+
+            ViewBag.MontoTotalAdeudado =
+                montoTotalAdeudado;
             ViewBag.MontoTotal =
                 reserva.MontoTotal;
 

@@ -67,6 +67,11 @@ namespace InmobiliariaCC2.Models
 
         public decimal Multa { get; set; }
 
+        public int? IdUsuarioCreacion { get; set; }
+
+        public int? IdUsuarioTerminacion { get; set; }
+
+
         public bool Estado { get; set; } = true;
     }
 }
