@@ -1,0 +1,178 @@
+@model InmobiliariaCC2.Models.Pago
+
+@{
+    ViewData["Title"] = "Detalle del Pago";
+
+    var reserva =
+        ViewBag.Reserva as InmobiliariaCC2.Models.Reserva;
+}
+
+
+<h2>Detalle del Pago N.º @Model.IdPago</h2>
+
+
+<div class="card mb-4">
+
+    <div class="card-header bg-dark text-white">
+        <strong>Información del Pago</strong>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <p>
+                    <strong>Reserva:</strong><br />
+                    N.º @Model.IdReserva
+                </p>
+
+                <p>
+                    <strong>Concepto:</strong><br />
+                    @Model.Concepto
+                </p>
+
+                <p>
+                    <strong>Monto:</strong><br />
+                    @Model.Monto.ToString("C")
+                </p>
+
+                <p>
+                    <strong>Fecha del Pago:</strong><br />
+                    @Model.FechaPago.ToString("dd/MM/yyyy HH:mm")
+                </p>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+                <p>
+                    <strong>Medio de Pago:</strong><br />
+                    @Model.MedioPago
+                </p>
+
+                <p>
+                    <strong>Observación:</strong><br />
+
+                    @if (string.IsNullOrWhiteSpace(Model.Observacion))
+                    {
+                        <span>Sin observaciones</span>
+                    }
+                    else
+                    {
+                        @Model.Observacion
+                    }
+                </p>
+
+                <p>
+                    <strong>Estado:</strong><br />
+
+                    @if (Model.Estado)
+                    {
+                        <span class="badge bg-success">
+                            Activo
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            Anulado
+                        </span>
+                    }
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@if (reserva != null)
+{
+    <div class="card mb-4">
+
+        <div class="card-header bg-info text-white">
+            <strong>Datos de la Reserva</strong>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Inquilino:</strong><br />
+                        @reserva.Inquilino?.Nombre
+                        @reserva.Inquilino?.Apellido
+                    </p>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Inmueble:</strong><br />
+                        @reserva.Inmueble?.Direccion
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+@if (User.IsInRole("Administrador"))
+{
+    <div class="card mb-4">
+
+        <div class="card-header bg-secondary text-white">
+            <strong>Auditoría</strong>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Pago creado por:</strong><br />
+                        @ViewBag.UsuarioCreacion
+                    </p>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Pago anulado por:</strong><br />
+                        @ViewBag.UsuarioAnulacion
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<a asp-action="Index"
+   asp-route-idReserva="@Model.IdReserva"
+   class="btn btn-secondary">
+
+    Volver a Pagos
+
+</a>
