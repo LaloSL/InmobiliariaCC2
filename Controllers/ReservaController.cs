@@ -31,7 +31,7 @@ namespace InmobiliariaCC2.Controllers
         // Administrador y Empleado
         // =====================================================
 
-        [Authorize(Roles = "Administrador,Empleado")]
+        [AllowAnonymous]
         public IActionResult Index()
         {
             var lista = _repoReserva.ObtenerTodas();
@@ -42,7 +42,7 @@ namespace InmobiliariaCC2.Controllers
 
         // =====================================================
         // CREAR RESERVA - GET
-        // Administrador y Empleado
+        // ACCESO PÚBLICO
         // =====================================================
 
         [Authorize(Roles = "Administrador,Empleado")]
@@ -56,9 +56,10 @@ namespace InmobiliariaCC2.Controllers
 
         // =====================================================
         // CREAR RESERVA - POST
-        // Administrador y Empleado
+        // ACCESO PÚBLICO
         // =====================================================
 
+        [HttpPost]
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Empleado")]
@@ -66,7 +67,10 @@ namespace InmobiliariaCC2.Controllers
             Reserva reserva,
             int? idTipo)
         {
-            // Validación de fechas
+            // =================================================
+            // VALIDACIÓN DE FECHAS
+            // =================================================
+
             if (reserva.FechaHasta <= reserva.FechaDesde)
             {
                 ModelState.AddModelError(
@@ -76,7 +80,10 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
-            // Verificar disponibilidad del inmueble
+            // =================================================
+            // VERIFICAR DISPONIBILIDAD DEL INMUEBLE
+            // =================================================
+
             if (reserva.IdInmueble > 0 &&
                 reserva.FechaHasta > reserva.FechaDesde)
             {
@@ -96,11 +103,16 @@ namespace InmobiliariaCC2.Controllers
             }
 
 
+            // =================================================
+            // SI LOS DATOS SON VÁLIDOS
+            // =================================================
+
             if (ModelState.IsValid)
             {
                 var inmueble = _repoInmueble.ObtenerPorId(
                     reserva.IdInmueble
                 );
+
 
                 if (inmueble == null)
                 {
@@ -109,20 +121,29 @@ namespace InmobiliariaCC2.Controllers
                         "No se encontró el inmueble seleccionado."
                     );
 
+
                     CargarSelects(
                         idTipo,
                         reserva.IdInmueble
                     );
 
+
                     return View(reserva);
                 }
 
 
-                // El monto por día se obtiene del inmueble
+                // =================================================
+                // EL PRECIO SIEMPRE SE OBTIENE DESDE EL INMUEBLE
+                // No confiamos en un monto enviado desde el navegador
+                // =================================================
+
                 reserva.MontoDia = inmueble.PrecioDia;
 
 
-                // Guardar reserva
+                // =================================================
+                // GUARDAR RESERVA
+                // =================================================
+
                 _repoReserva.Guardar(reserva);
 
 
@@ -130,9 +151,22 @@ namespace InmobiliariaCC2.Controllers
                     "Reserva creada exitosamente.";
 
 
-                return RedirectToAction(nameof(Index));
+                // =================================================
+                // IMPORTANTE
+                // No enviamos al visitante a Reserva/Index
+                // porque Index está protegido para empleados/admin.
+                // =================================================
+
+                return RedirectToAction(
+                    "Index",
+                    "Inmueble"
+                );
             }
 
+
+            // =================================================
+            // SI HUBO ERRORES, VOLVER A CARGAR LOS SELECT
+            // =================================================
 
             CargarSelects(
                 idTipo,
@@ -243,11 +277,13 @@ namespace InmobiliariaCC2.Controllers
 
             if (diasCumplidos < (diasPactados / 2.0))
             {
-                multa = costoTotalRestante * 0.50m;
+                multa =
+                    costoTotalRestante * 0.50m;
             }
             else
             {
-                multa = costoTotalRestante * 0.25m;
+                multa =
+                    costoTotalRestante * 0.25m;
             }
 
 
@@ -271,12 +307,14 @@ namespace InmobiliariaCC2.Controllers
 
         // =====================================================
         // OBTENER INMUEBLES POR TIPO
-        // Utilizado desde el formulario de reserva
-        // Administrador y Empleado
+        // ACCESO PÚBLICO
+        //
+        // Esta acción es utilizada por el formulario Create
+        // para cargar los inmuebles según el tipo seleccionado.
         // =====================================================
 
         [HttpGet]
-        [Authorize(Roles = "Administrador,Empleado")]
+        [AllowAnonymous]
         public IActionResult ObtenerInmueblesPorTipo(int idTipo)
         {
             var inmuebles = _repoInmueble
@@ -284,11 +322,20 @@ namespace InmobiliariaCC2.Controllers
                 .Where(i => i.IdTipo == idTipo)
                 .Select(i => new
                 {
-                    idInmueble = i.IdInmueble,
-                    direccion = i.Direccion,
-                    cupo = i.Cupo,
-                    precioDia = i.PrecioDia,
-                    foto = i.Foto
+                    idInmueble =
+                        i.IdInmueble,
+
+                    direccion =
+                        i.Direccion,
+
+                    cupo =
+                        i.Cupo,
+
+                    precioDia =
+                        i.PrecioDia,
+
+                    foto =
+                        i.Foto
                 })
                 .ToList();
 
@@ -318,39 +365,45 @@ namespace InmobiliariaCC2.Controllers
                 .ToList();
 
 
-            ViewBag.Inquilinos = new SelectList(
-                inquilinos,
-                "IdInquilino",
-                "NombreCompleto"
-            );
+            ViewBag.Inquilinos =
+                new SelectList(
+                    inquilinos,
+                    "IdInquilino",
+                    "NombreCompleto"
+                );
 
 
-            ViewBag.Tipos = new SelectList(
-                _repoTipoInmueble.ObtenerTodos(),
-                "IdTipo",
-                "Nombre",
-                idTipo
-            );
+            ViewBag.Tipos =
+                new SelectList(
+                    _repoTipoInmueble.ObtenerTodos(),
+                    "IdTipo",
+                    "Nombre",
+                    idTipo
+                );
 
 
-            var inmuebles = new List<Inmueble>();
+            var inmuebles =
+                new List<Inmueble>();
 
 
             if (idTipo.HasValue)
             {
                 inmuebles = _repoInmueble
                     .ObtenerTodos()
-                    .Where(i => i.IdTipo == idTipo.Value)
+                    .Where(
+                        i => i.IdTipo == idTipo.Value
+                    )
                     .ToList();
             }
 
 
-            ViewBag.Inmuebles = new SelectList(
-                inmuebles,
-                "IdInmueble",
-                "Direccion",
-                idInmueble
-            );
+            ViewBag.Inmuebles =
+                new SelectList(
+                    inmuebles,
+                    "IdInmueble",
+                    "Direccion",
+                    idInmueble
+                );
         }
     }
 }

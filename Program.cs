@@ -11,6 +11,7 @@ builder.Services.AddScoped<RepositorioTipoInmueble>();
 builder.Services.AddScoped<RepositorioInmueble>();
 builder.Services.AddScoped<RepositorioInquilino>();
 builder.Services.AddScoped<RepositorioUsuario>();
+builder.Services.AddScoped<RepositorioSolicitudReserva>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

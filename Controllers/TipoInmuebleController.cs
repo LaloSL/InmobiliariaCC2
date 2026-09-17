@@ -15,7 +15,7 @@ namespace InmobiliariaCC2.Controllers
             _repo = repo;
         }
 
-        [Authorize(Roles = "Administrador,Empleado")]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Index()
         {
             var lista = _repo.ObtenerTodos();

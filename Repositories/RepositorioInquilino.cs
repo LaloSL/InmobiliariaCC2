@@ -159,7 +159,9 @@ namespace InmobiliariaCC2.Repositories
 
                     connection.Open();
 
-                    return command.ExecuteNonQuery();
+                    command.ExecuteNonQuery();
+
+                    return (int)command.LastInsertedId;
                 }
             }
         }
@@ -217,5 +219,77 @@ namespace InmobiliariaCC2.Repositories
                 }
             }
         }
+
+
+        public Inquilino? ObtenerPorDni(string dni)
+        {
+            Inquilino? inquilino = null;
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                var sql = @"SELECT
+                        IdInquilino,
+                        Dni,
+                        Nombre,
+                        Apellido,
+                        Email,
+                        Telefono,
+                        DireccionOrigen,
+                        Estado,
+                        FechaCreacion
+                    FROM Inquilino
+                    WHERE Dni = @dni
+                    LIMIT 1;";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@dni", dni);
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            inquilino = new Inquilino
+                            {
+                                IdInquilino =
+                                    reader.GetInt32("IdInquilino"),
+
+                                Dni =
+                                    reader.GetString("Dni"),
+
+                                Nombre =
+                                    reader.GetString("Nombre"),
+
+                                Apellido =
+                                    reader.GetString("Apellido"),
+
+                                Email =
+                                    reader.GetString("Email"),
+
+                                Telefono =
+                                    reader.GetString("Telefono"),
+
+                                DireccionOrigen =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("DireccionOrigen"))
+                                        ? null
+                                        : reader.GetString("DireccionOrigen"),
+
+                                Estado =
+                                    reader.GetBoolean("Estado"),
+
+                                FechaCreacion =
+                                    reader.GetDateTime("FechaCreacion")
+                            };
+                        }
+                    }
+                }
+            }
+
+            return inquilino;
+        }
+
     }
 }
