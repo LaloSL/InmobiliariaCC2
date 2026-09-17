@@ -1,0 +1,239 @@
+@model InmobiliariaCC2.Models.SolicitudReserva
+
+@{
+    ViewData["Title"] = "Solicitar Reserva";
+
+    var inmueble = ViewBag.Inmueble as InmobiliariaCC2.Models.Inmueble;
+
+    int cantidadDias = (Model.FechaHasta - Model.FechaDesde).Days;
+
+    decimal montoTotal = inmueble != null
+        ? cantidadDias * inmueble.PrecioDia
+        : 0;
+}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-8">
+
+        <h2 class="mb-4">Solicitud de Reserva</h2>
+
+
+        @if (inmueble != null)
+        {
+            <div class="card mb-4">
+
+                <div class="card-header bg-dark text-white">
+                    Inmueble seleccionado
+                </div>
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        @inmueble.Direccion
+                    </h5>
+
+                    <p class="mb-1">
+                        <strong>Tipo:</strong>
+                        @inmueble.Tipo?.Nombre
+                    </p>
+
+                    <p class="mb-1">
+                        <strong>Cupo:</strong>
+                        @inmueble.Cupo personas
+                    </p>
+
+                    <p class="mb-1">
+                        <strong>Precio por día:</strong>
+                        $@inmueble.PrecioDia.ToString("N2")
+                    </p>
+
+                    <hr />
+
+                    <p class="mb-1">
+                        <strong>Desde:</strong>
+                        @Model.FechaDesde.ToString("dd/MM/yyyy")
+                    </p>
+
+                    <p class="mb-1">
+                        <strong>Hasta:</strong>
+                        @Model.FechaHasta.ToString("dd/MM/yyyy")
+                    </p>
+
+                    <p class="mb-1">
+                        <strong>Cantidad de días:</strong>
+                        @cantidadDias
+                    </p>
+
+                    <p class="mt-3 fs-5">
+                        <strong>Monto total estimado:</strong>
+                        $@montoTotal.ToString("N2")
+                    </p>
+
+                </div>
+
+            </div>
+        }
+
+
+        <div class="alert alert-info">
+
+            <strong>Importante:</strong>
+
+            El envío de esta solicitud no confirma la reserva.
+            La inmobiliaria verificará la disponibilidad y los datos
+            ingresados antes de aprobarla.
+
+        </div>
+
+
+        <form asp-action="Create"
+              asp-controller="SolicitudReserva"
+              method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+
+            <!-- Estos datos vienen de la búsqueda y no se modifican -->
+
+            <input type="hidden"
+                   asp-for="IdInmueble" />
+
+            <input type="hidden"
+                   asp-for="FechaDesde" />
+
+            <input type="hidden"
+                   asp-for="FechaHasta" />
+
+
+            <h4 class="mt-4 mb-3">
+                Datos del solicitante
+            </h4>
+
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="Nombre"
+                           class="form-label">
+                        Nombre
+                    </label>
+
+                    <input asp-for="Nombre"
+                           class="form-control" />
+
+                    <span asp-validation-for="Nombre"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="Apellido"
+                           class="form-label">
+                        Apellido
+                    </label>
+
+                    <input asp-for="Apellido"
+                           class="form-control" />
+
+                    <span asp-validation-for="Apellido"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="Dni"
+                       class="form-label">
+                    DNI
+                </label>
+
+                <input asp-for="Dni"
+                       class="form-control" />
+
+                <span asp-validation-for="Dni"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="Email"
+                       class="form-label">
+                    Email
+                </label>
+
+                <input asp-for="Email"
+                       type="email"
+                       class="form-control" />
+
+                <span asp-validation-for="Email"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <label asp-for="Telefono"
+                       class="form-label">
+                    Teléfono
+                </label>
+
+                <input asp-for="Telefono"
+                       class="form-control" />
+
+                <span asp-validation-for="Telefono"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <div class="d-flex gap-2 mt-4">
+
+                <button type="submit"
+                        class="btn btn-success">
+
+                    Enviar Solicitud
+
+                </button>
+
+                <a asp-controller="Inmueble"
+                   asp-action="BuscarDisponibles"
+                   asp-route-desde="@Model.FechaDesde.ToString("yyyy-MM-dd")"
+                   asp-route-hasta="@Model.FechaHasta.ToString("yyyy-MM-dd")"
+                   class="btn btn-secondary">
+
+                    Volver
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
