@@ -1,6 +1,7 @@
 using InmobiliariaCC2.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
@@ -13,6 +14,7 @@ builder.Services.AddScoped<RepositorioInquilino>();
 builder.Services.AddScoped<RepositorioUsuario>();
 builder.Services.AddScoped<RepositorioPago>();
 builder.Services.AddScoped<RepositorioSolicitudReserva>();
+builder.Services.AddScoped<RepositorioInforme>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

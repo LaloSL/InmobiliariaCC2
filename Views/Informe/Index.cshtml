@@ -1,0 +1,101 @@
+@{
+  ViewData["Title"] = "Informes";
+}
+
+<h2>Informes</h2>
+
+<p class="text-muted">
+  Consultas e informes de gestión de alquileres temporales.
+</p>
+
+<div class="row mt-4">
+
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+
+        <h5 class="card-title">
+          Inmuebles más reservados
+        </h5>
+
+        <p class="card-text">
+          Ranking de inmuebles según la cantidad
+          de reservas realizadas durante los
+          últimos 365 días.
+        </p>
+
+        <a asp-controller="Informe" asp-action="MasReservados" class="btn btn-primary">
+          Ver Informe
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+
+        <h5 class="card-title">
+          Inmuebles sin reservas
+        </h5>
+
+        <p class="card-text">
+          Permite consultar inmuebles que no
+          registraron reservas durante una
+          cantidad determinada de días.
+        </p>
+
+        <a asp-controller="Informe" asp-action="SinReservas" class="btn btn-primary">
+          Ver Informe
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+
+        <h5 class="card-title">
+          Reservas vigentes
+        </h5>
+
+        <p class="card-text">
+          Muestra las reservas activas cuyo
+          período de alquiler incluye la
+          fecha actual.
+        </p>
+
+        <a asp-controller="Informe" asp-action="ReservasVigentes" class="btn btn-primary">
+          Ver Informe
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+
+        <h5 class="card-title">
+          Reservas que finalizan en X días
+        </h5>
+
+        <p class="card-text">
+          Permite consultar las reservas que
+          finalizan dentro de una cantidad
+          determinada de días.
+        </p>
+
+        <a asp-controller="Informe" asp-action="ProximosVencimientos" class="btn btn-primary">
+          Ver Informe
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+</div>
