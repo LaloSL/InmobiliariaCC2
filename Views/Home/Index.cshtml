@@ -1,8 +1,85 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-home">
+    <img src="~/uploads/portada.jpg" alt="Propiedad inmobiliaria" class="hero-image" />
+    <div class="hero-overlay">
+        <div class="hero-content">
+            <h1>Bienvenido a Inmobiliaria CC2</h1>
+            <p>
+                Gestioná propiedades, reservas, propietarios e inquilinos
+                de manera simple y organizada.
+            </p>
+        </div>
+    </div>
+
+
 </div>
+
+<div class="container mt-5">
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <h3>Propiedades</h3>
+            <p>Consultá y administrá los inmuebles registrados.</p>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <h3>Reservas</h3>
+            <p>Gestioná las reservas de manera rápida y sencilla.</p>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <h3>Gestión</h3>
+            <p>Administrá propietarios, inquilinos y usuarios.</p>
+        </div>
+    </div>
+
+    
+</div>
+
+<style>
+    .hero-home {
+        position: relative;
+        width: 100vw;
+        height: calc(100vh - 70px);
+        overflow: hidden;
+        margin-left: calc(50% - 50vw);
+    }
+
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.45);
+    }
+
+    .hero-content {
+        color: white;
+        max-width: 700px;
+        padding: 30px;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .hero-content p {
+        font-size: 1.25rem;
+    }
+</style>
