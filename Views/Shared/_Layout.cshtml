@@ -23,23 +23,12 @@
 
         <div class="container-fluid">
 
-            <!-- =====================================================
-                 LOGO / INICIO
-                 ===================================================== -->
-
             <a class="navbar-brand"
                asp-area=""
                asp-controller="Home"
                asp-action="Index">
-
                 InmobiliariaCC2
-
             </a>
-
-
-            <!-- =====================================================
-                 BOTÓN MENÚ RESPONSIVE
-                 ===================================================== -->
 
             <button class="navbar-toggler"
                     type="button"
@@ -53,21 +42,9 @@
 
             </button>
 
-
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
 
-
-                <!-- =================================================
-                     MENÚ PRINCIPAL
-                     ================================================= -->
-
                 <ul class="navbar-nav flex-grow-1">
-
-
-                    @* =================================================
-                       PROPIETARIOS
-                       Administrador y Empleado
-                       ================================================= *@
 
                     @if (User.IsInRole("Administrador") ||
                          User.IsInRole("Empleado"))
@@ -78,19 +55,11 @@
                                asp-area=""
                                asp-controller="Propietario"
                                asp-action="Index">
-
                                 Propietarios
-
                             </a>
 
                         </li>
                     }
-
-
-                    @* =================================================
-                       INQUILINOS
-                       Administrador y Empleado
-                       ================================================= *@
 
                     @if (User.IsInRole("Administrador") ||
                          User.IsInRole("Empleado"))
@@ -100,19 +69,11 @@
                             <a class="nav-link text-light"
                                asp-controller="Inquilino"
                                asp-action="Index">
-
                                 Inquilinos
-
                             </a>
 
                         </li>
                     }
-
-
-                    @* =================================================
-                       TIPOS DE INMUEBLE
-                       Solo Administrador
-                       ================================================= *@
 
                     @if (User.IsInRole("Administrador"))
                     {
@@ -122,19 +83,11 @@
                                asp-area=""
                                asp-controller="TipoInmueble"
                                asp-action="Index">
-
                                 Tipos de Inmueble
-
                             </a>
 
                         </li>
                     }
-
-
-                    @* =================================================
-                       INMUEBLES
-                       Acceso público según implementación actual
-                       ================================================= *@
 
                     <li class="nav-item">
 
@@ -142,17 +95,10 @@
                            asp-area=""
                            asp-controller="Inmueble"
                            asp-action="Index">
-
                             Inmuebles
-
                         </a>
 
                     </li>
-
-
-                    @* =================================================
-                       RESERVAS
-                       ================================================= *@
 
                     <li class="nav-item">
 
@@ -160,18 +106,10 @@
                            asp-area=""
                            asp-controller="Reserva"
                            asp-action="Index">
-
                             Reservas
-
                         </a>
 
                     </li>
-
-
-                    @* =================================================
-                       SOLICITUDES DE RESERVA
-                       Administrador y Empleado
-                       ================================================= *@
 
                     @if (User.IsInRole("Administrador") ||
                          User.IsInRole("Empleado"))
@@ -182,9 +120,18 @@
                                asp-area=""
                                asp-controller="SolicitudReserva"
                                asp-action="Index">
-
                                 Solicitudes
+                            </a>
 
+                        </li>
+
+                        <li class="nav-item">
+
+                            <a class="nav-link text-light"
+                               asp-area=""
+                               asp-controller="Informe"
+                               asp-action="Index">
+                                Informes
                             </a>
 
                         </li>
@@ -192,88 +139,68 @@
 
                 </ul>
 
-
-                <!-- =================================================
-                     SECTOR DE USUARIO
-                     ================================================= -->
-
                 <ul class="navbar-nav">
 
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-
-                        @* =============================================
-                           MI PERFIL
-                           Disponible para cualquier usuario autenticado
-                           ============================================= *@
-
                         <li class="nav-item">
 
                             <a class="nav-link text-light"
                                asp-controller="Usuario"
                                asp-action="Perfil">
-
                                 Mi Perfil
-
                             </a>
 
                         </li>
-
-
-                        @* =============================================
-                           USUARIO Y ROL
-                           ============================================= *@
 
                         <li class="nav-item">
 
                             <span class="nav-link text-light">
 
-                               @{
-    var avatarUsuario = User.FindFirst("Avatar")?.Value;
-    var rolUsuario = User.FindFirst(
-        System.Security.Claims.ClaimTypes.Role
-    )?.Value;
-}
+                                @{
+                                    var avatarUsuario =
+                                        User.FindFirst("Avatar")?.Value;
 
-<div class="d-flex align-items-center gap-2">
+                                    var rolUsuario =
+                                        User.FindFirst(
+                                            System.Security.Claims.ClaimTypes.Role
+                                        )?.Value;
+                                }
 
-    @if (!string.IsNullOrWhiteSpace(avatarUsuario))
-    {
-        <img src="@avatarUsuario"
-             alt="Avatar"
-             class="rounded-circle border"
-             style="width: 36px;
-                    height: 36px;
-                    object-fit: cover;" />
-    }
-    else
-    {
-        <div class="rounded-circle bg-secondary text-white
-                    d-flex align-items-center justify-content-center"
-             style="width: 36px;
-                    height: 36px;
-                    font-size: 15px;
-                    font-weight: bold;">
+                                <div class="d-flex align-items-center gap-2">
 
-            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                                    @if (!string.IsNullOrWhiteSpace(avatarUsuario))
+                                    {
+                                        <img src="@avatarUsuario"
+                                             alt="Avatar"
+                                             class="rounded-circle border"
+                                             style="width: 36px;
+                                                    height: 36px;
+                                                    object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle bg-secondary text-white
+                                                    d-flex align-items-center justify-content-center"
+                                             style="width: 36px;
+                                                    height: 36px;
+                                                    font-size: 15px;
+                                                    font-weight: bold;">
 
-        </div>
-    }
+                                            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
 
-    <span>
-        Hola, @User.Identity?.Name (@rolUsuario)
-    </span>
+                                        </div>
+                                    }
 
-</div>
+                                    <span>
+                                        Hola, @User.Identity?.Name (@rolUsuario)
+                                    </span>
+
+                                </div>
 
                             </span>
 
                         </li>
-
-
-                        @* =============================================
-                           CERRAR SESIÓN
-                           ============================================= *@
 
                         <li class="nav-item">
 
@@ -286,9 +213,7 @@
 
                                 <button type="submit"
                                         class="btn btn-link nav-link text-light">
-
                                     Cerrar sesión
-
                                 </button>
 
                             </form>
@@ -297,19 +222,12 @@
                     }
                     else
                     {
-
-                        @* =============================================
-                           INICIAR SESIÓN
-                           ============================================= *@
-
                         <li class="nav-item">
 
                             <a class="nav-link text-light"
                                asp-controller="Usuario"
                                asp-action="Login">
-
                                 Iniciar sesión
-
                             </a>
 
                         </li>
@@ -325,8 +243,6 @@
 
 </header>
 
-
-
 <div class="container">
 
     <main role="main" class="pb-3">
@@ -337,7 +253,6 @@
 
 </div>
 
-
 <footer class="border-top footer text-muted">
 
     <div class="container">
@@ -347,8 +262,6 @@
     </div>
 
 </footer>
-
-
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
