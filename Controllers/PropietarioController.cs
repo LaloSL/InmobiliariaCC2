@@ -18,9 +18,44 @@ namespace InmobiliariaCC2.Controllers
 
         // GET: Propietario
         [Authorize(Roles = "Administrador,Empleado")]
-        public IActionResult Index()
+        public IActionResult Index(
+    string? buscar,
+    int pagina = 1)
         {
-            var lista = _repositorio.ObtenerTodos();
+            const int cantidadPorPagina = 5;
+
+            if (pagina < 1)
+            {
+                pagina = 1;
+            }
+
+            int totalRegistros =
+                _repositorio.ContarPaginados(buscar);
+
+            int totalPaginas =
+                (int)Math.Ceiling(
+                    totalRegistros /
+                    (double)cantidadPorPagina
+                );
+
+            if (totalPaginas > 0 &&
+                pagina > totalPaginas)
+            {
+                pagina = totalPaginas;
+            }
+
+            var lista =
+                _repositorio.ObtenerPaginados(
+                    buscar,
+                    pagina,
+                    cantidadPorPagina
+                );
+
+            ViewBag.Buscar = buscar;
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TotalPaginas = totalPaginas;
+            ViewBag.TotalRegistros = totalRegistros;
+
             return View(lista);
         }
 

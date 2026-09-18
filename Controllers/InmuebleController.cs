@@ -26,9 +26,44 @@ namespace InmobiliariaCC2.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Index()
+        public IActionResult Index(
+     string? buscar,
+     int pagina = 1)
         {
-            var lista = _repoInmueble.ObtenerTodos();
+            const int cantidadPorPagina = 5;
+
+            if (pagina < 1)
+            {
+                pagina = 1;
+            }
+
+            int totalRegistros =
+                _repoInmueble.ContarPaginados(buscar);
+
+            int totalPaginas =
+                (int)Math.Ceiling(
+                    totalRegistros /
+                    (double)cantidadPorPagina
+                );
+
+            if (totalPaginas > 0 &&
+                pagina > totalPaginas)
+            {
+                pagina = totalPaginas;
+            }
+
+            var lista =
+                _repoInmueble.ObtenerPaginados(
+                    buscar,
+                    pagina,
+                    cantidadPorPagina
+                );
+
+            ViewBag.Buscar = buscar;
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TotalPaginas = totalPaginas;
+            ViewBag.TotalRegistros = totalRegistros;
+
             return View(lista);
         }
 
@@ -49,7 +84,7 @@ namespace InmobiliariaCC2.Controllers
             return View();
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
@@ -172,7 +207,7 @@ namespace InmobiliariaCC2.Controllers
             return View(inmueble);
         }
 
-        
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]

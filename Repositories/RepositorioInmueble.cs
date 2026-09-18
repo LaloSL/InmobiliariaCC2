@@ -442,5 +442,133 @@ namespace InmobiliariaCC2.Repositories
             return inmueble;
         }
 
+
+        public List<Inmueble> ObtenerPaginados(
+            string? buscar,
+            int pagina,
+            int cantidadPorPagina)
+        {
+            var lista = new List<Inmueble>();
+
+            if (pagina < 1)
+                pagina = 1;
+
+            if (cantidadPorPagina < 1)
+                cantidadPorPagina = 5;
+
+            int offset = (pagina - 1) * cantidadPorPagina;
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                var sql = @"
+            SELECT
+                i.IdInmueble,
+                i.Direccion,
+                i.Cupo,
+                i.Coordenadas,
+                i.PrecioDia,
+                i.PorcentajeReserva,
+                i.Estado,
+                i.Foto,
+                t.IdTipo,
+                t.Nombre AS TipoNombre,
+                p.IdPropietario,
+                p.Nombre AS PropietarioNombre,
+                p.Apellido AS PropietarioApellido
+            FROM Inmueble i
+            INNER JOIN TipoInmueble t
+                ON i.IdTipo = t.IdTipo
+            INNER JOIN Propietario p
+                ON i.IdPropietario = p.IdPropietario
+            WHERE i.Estado = 1
+              AND (
+                    @buscar = ''
+                    OR i.Direccion LIKE CONCAT('%', @buscar, '%')
+                    OR t.Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR p.Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR p.Apellido LIKE CONCAT('%', @buscar, '%')
+                    OR CONCAT(p.Nombre, ' ', p.Apellido)
+                        LIKE CONCAT('%', @buscar, '%')
+                  )
+            ORDER BY i.IdInmueble DESC
+            LIMIT @cantidad
+            OFFSET @offset;
+        ";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue(
+                        "@buscar",
+                        buscar?.Trim() ?? ""
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@cantidad",
+                        cantidadPorPagina
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@offset",
+                        offset
+                    );
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(
+                                MapearInmuebleCompleto(reader)
+                            );
+                        }
+                    }
+                }
+            }
+
+            return lista;
+        }
+
+
+        public int ContarPaginados(string? buscar)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                var sql = @"
+            SELECT COUNT(*)
+            FROM Inmueble i
+            INNER JOIN TipoInmueble t
+                ON i.IdTipo = t.IdTipo
+            INNER JOIN Propietario p
+                ON i.IdPropietario = p.IdPropietario
+            WHERE i.Estado = 1
+              AND (
+                    @buscar = ''
+                    OR i.Direccion LIKE CONCAT('%', @buscar, '%')
+                    OR t.Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR p.Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR p.Apellido LIKE CONCAT('%', @buscar, '%')
+                    OR CONCAT(p.Nombre, ' ', p.Apellido)
+                        LIKE CONCAT('%', @buscar, '%')
+                  );
+        ";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue(
+                        "@buscar",
+                        buscar?.Trim() ?? ""
+                    );
+
+                    connection.Open();
+
+                    return Convert.ToInt32(
+                        command.ExecuteScalar()
+                    );
+                }
+            }
+        }
+
+
     }
 }

@@ -291,5 +291,160 @@ namespace InmobiliariaCC2.Repositories
             return inquilino;
         }
 
+
+        public List<Inquilino> ObtenerPaginados(
+            string? buscar,
+            int pagina,
+            int cantidadPorPagina)
+        {
+            var lista = new List<Inquilino>();
+
+            if (pagina < 1)
+                pagina = 1;
+
+            if (cantidadPorPagina < 1)
+                cantidadPorPagina = 5;
+
+            int offset =
+                (pagina - 1) * cantidadPorPagina;
+
+            using (var connection =
+                new MySqlConnection(_connectionString))
+            {
+                var sql = @"
+            SELECT
+                IdInquilino,
+                Dni,
+                Nombre,
+                Apellido,
+                Email,
+                Telefono,
+                DireccionOrigen,
+                Estado,
+                FechaCreacion
+            FROM Inquilino
+            WHERE Estado = 1
+              AND (
+                    @buscar = ''
+                    OR Dni LIKE CONCAT('%', @buscar, '%')
+                    OR Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR Apellido LIKE CONCAT('%', @buscar, '%')
+                    OR Email LIKE CONCAT('%', @buscar, '%')
+                    OR Telefono LIKE CONCAT('%', @buscar, '%')
+                    OR DireccionOrigen LIKE CONCAT('%', @buscar, '%')
+                    OR CONCAT(Nombre, ' ', Apellido)
+                        LIKE CONCAT('%', @buscar, '%')
+                  )
+            ORDER BY Apellido ASC, Nombre ASC
+            LIMIT @cantidad
+            OFFSET @offset;
+        ";
+
+                using (var command =
+                    new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue(
+                        "@buscar",
+                        buscar?.Trim() ?? ""
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@cantidad",
+                        cantidadPorPagina
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@offset",
+                        offset
+                    );
+
+                    connection.Open();
+
+                    using (var reader =
+                        command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new Inquilino
+                            {
+                                IdInquilino =
+                                    reader.GetInt32("IdInquilino"),
+
+                                Dni =
+                                    reader.GetString("Dni"),
+
+                                Nombre =
+                                    reader.GetString("Nombre"),
+
+                                Apellido =
+                                    reader.GetString("Apellido"),
+
+                                Email =
+                                    reader.GetString("Email"),
+
+                                Telefono =
+                                    reader.GetString("Telefono"),
+
+                                DireccionOrigen =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("DireccionOrigen"))
+                                        ? null
+                                        : reader.GetString("DireccionOrigen"),
+
+                                Estado =
+                                    reader.GetBoolean("Estado"),
+
+                                FechaCreacion =
+                                    reader.GetDateTime("FechaCreacion")
+                            });
+                        }
+                    }
+                }
+            }
+
+            return lista;
+        }
+
+
+        public int ContarPaginados(string? buscar)
+        {
+            using (var connection =
+                new MySqlConnection(_connectionString))
+            {
+                var sql = @"
+            SELECT COUNT(*)
+            FROM Inquilino
+            WHERE Estado = 1
+              AND (
+                    @buscar = ''
+                    OR Dni LIKE CONCAT('%', @buscar, '%')
+                    OR Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR Apellido LIKE CONCAT('%', @buscar, '%')
+                    OR Email LIKE CONCAT('%', @buscar, '%')
+                    OR Telefono LIKE CONCAT('%', @buscar, '%')
+                    OR DireccionOrigen LIKE CONCAT('%', @buscar, '%')
+                    OR CONCAT(Nombre, ' ', Apellido)
+                        LIKE CONCAT('%', @buscar, '%')
+                  );
+        ";
+
+                using (var command =
+                    new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue(
+                        "@buscar",
+                        buscar?.Trim() ?? ""
+                    );
+
+                    connection.Open();
+
+                    return Convert.ToInt32(
+                        command.ExecuteScalar()
+                    );
+                }
+            }
+        }
+
+
     }
 }

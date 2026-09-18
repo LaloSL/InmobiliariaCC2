@@ -1,0 +1,175 @@
+@model IEnumerable<InmobiliariaCC2.Models.InformeInmueble>
+
+@using InmobiliariaCC2.Models
+
+@{
+    ViewData["Title"] = "Inmuebles por Propietario";
+
+    var propietarios =
+        ViewBag.Propietarios as List<Propietario>
+        ?? new List<Propietario>();
+
+    int? idSeleccionado =
+        ViewBag.IdPropietario as int?;
+}
+
+<h2>Inmuebles por Propietario</h2>
+
+<p class="text-muted">
+    Permite consultar los inmuebles pertenecientes
+    a un propietario determinado.
+</p>
+
+<form method="get"
+      asp-controller="Informe"
+      asp-action="PorPropietario"
+      class="row g-3 align-items-end mt-2 mb-4">
+
+    <div class="col-md-5">
+
+        <label class="form-label">
+            Propietario
+        </label>
+
+        <select name="idPropietario"
+                class="form-select"
+                required>
+
+            <option value="">
+                Seleccione un propietario
+            </option>
+
+            @foreach (var propietario in propietarios)
+            {
+                if (idSeleccionado ==
+                    propietario.IdPropietario)
+                {
+                    <option value="@propietario.IdPropietario"
+                            selected>
+                        @propietario.Apellido,
+                        @propietario.Nombre
+                    </option>
+                }
+                else
+                {
+                    <option value="@propietario.IdPropietario">
+                        @propietario.Apellido,
+                        @propietario.Nombre
+                    </option>
+                }
+            }
+
+        </select>
+
+    </div>
+
+    <div class="col-md-auto">
+
+        <button type="submit"
+                class="btn btn-primary">
+            Consultar
+        </button>
+
+    </div>
+
+</form>
+
+@if (!idSeleccionado.HasValue)
+{
+    <div class="alert alert-info">
+        Seleccione un propietario para consultar
+        sus inmuebles.
+    </div>
+}
+else if (!Model.Any())
+{
+    <div class="alert alert-warning">
+        El propietario seleccionado no posee
+        inmuebles registrados.
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary">
+
+        Propietario:
+        <strong>
+            @Model.First().Propietario
+        </strong>
+
+        &nbsp;|&nbsp;
+
+        Cantidad de inmuebles:
+        <strong>
+            @Model.Count()
+        </strong>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-striped table-bordered">
+
+            <thead class="table-dark">
+
+                <tr>
+                    <th>Inmueble</th>
+                    <th>Propietario</th>
+                    <th>Precio por Día</th>
+                    <th>Estado</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>
+                            @item.Direccion
+                        </td>
+
+                        <td>
+                            @item.Propietario
+                        </td>
+
+                        <td>
+                            @item.PrecioDia.ToString("C2")
+                        </td>
+
+                        <td>
+
+                            @if (item.Estado)
+                            {
+                                <span class="badge bg-success">
+                                    Disponible
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    No disponible
+                                </span>
+                            }
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+}
+
+<a asp-controller="Informe"
+   asp-action="Index"
+   class="btn btn-secondary mt-2">
+
+    Volver a Informes
+
+</a>

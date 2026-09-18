@@ -1,58 +1,81 @@
 # InmobiliariaCC2
 
-Sistema web desarrollado en ASP.NET Core MVC para la gestión de alquileres temporarios.
+## Sistema Web para Gestión de Alquileres Temporales
 
-El proyecto permite administrar propietarios, inquilinos, tipos de inmueble, inmuebles y reservas, utilizando una base de datos MySQL y consultas SQL escritas manualmente.
+Proyecto final desarrollado en **ASP.NET Core MVC** para la gestión integral de una inmobiliaria dedicada a alquileres temporales.
+
+El sistema permite administrar propietarios, inquilinos, tipos de inmueble, inmuebles, solicitudes de reserva, reservas, pagos y usuarios. También incorpora autenticación por roles, control de disponibilidad, búsquedas, paginación e informes de gestión.
+
+---
 
 ## Integrantes
 
 - Guillermo Concha
 - Natalia Camargo
 
+---
+
 ## Tecnologías utilizadas
 
-- .NET 10
 - ASP.NET Core MVC
 - C#
+- .NET
 - MySQL
-- MySql.Data
-- Bootstrap
+- MySQL Workbench
+- MySql.Data / MySqlConnector
 - HTML
 - CSS
-- JavaScript
+- Bootstrap
+- Razor Views
 - Git
 - GitHub
+- Visual Studio Code
 
-## Acceso a datos
+El acceso a datos se realiza mediante SQL manual utilizando repositorios y objetos como:
 
-El proyecto no utiliza Entity Framework Core para realizar las operaciones sobre la base de datos.
+- `MySqlConnection`
+- `MySqlCommand`
+- `MySqlDataReader`
 
-El acceso a MySQL se realiza mediante:
+No se utiliza Entity Framework para la persistencia de datos.
 
-- MySqlConnection
-- MySqlCommand
-- MySqlDataReader
-- ExecuteReader()
-- ExecuteScalar()
-- ExecuteNonQuery()
+---
 
-Las consultas SQL, tales como SELECT, INSERT, UPDATE e INNER JOIN, se encuentran escritas manualmente dentro de los repositorios.
+# Arquitectura del proyecto
 
-La estructura general de acceso a datos es:
+El proyecto sigue una arquitectura basada en el patrón MVC:
 
-```text
-Controller
-    ↓
-Repository
-    ↓
-MySqlConnection / MySqlCommand
-    ↓
-SQL
-    ↓
-MySQL
-```
+## Models
 
-## Base de datos
+Representan las entidades y modelos utilizados por el sistema.
+
+Entre los principales modelos se encuentran:
+
+- Propietario
+- Inquilino
+- TipoInmueble
+- Inmueble
+- SolicitudReserva
+- Reserva
+- Pago
+- Usuario
+- modelos auxiliares para informes
+
+## Views
+
+Contienen las interfaces desarrolladas mediante Razor, HTML y Bootstrap.
+
+## Controllers
+
+Gestionan las solicitudes HTTP, validaciones, autorización y comunicación entre las vistas y los repositorios.
+
+## Repositories
+
+Contienen el acceso a MySQL mediante consultas SQL manuales.
+
+---
+
+# Base de datos
 
 La base de datos utilizada por el proyecto se denomina:
 
@@ -60,995 +83,632 @@ La base de datos utilizada por el proyecto se denomina:
 inmobiliaria_cc2
 ```
 
-Actualmente contiene las siguientes tablas principales:
+El repositorio incluye el archivo:
 
 ```text
-Propietario
-Inquilino
-TipoInmueble
-Inmueble
-Reserva
+Inmobiliaria_CC2_Final.sql
 ```
 
-### Relaciones principales
+Este archivo contiene la estructura y los datos necesarios para crear e inicializar la base utilizada por la aplicación.
 
-```text
-Propietario
-     │
-     │ IdPropietario
-     ▼
-  Inmueble ◄──────── TipoInmueble
-     │
-     │ IdInmueble
-     ▼
-   Reserva
-     ▲
-     │ IdInquilino
-     │
- Inquilino
-```
+---
 
-Las relaciones mediante claves foráneas son:
+# Tablas principales
 
-```text
-Inmueble.IdPropietario
-        ↓
-Propietario.IdPropietario
+La base de datos contiene las siguientes tablas:
 
+1. `propietario`
+2. `inquilino`
+3. `tipoinmueble`
+4. `inmueble`
+5. `solicitudreserva`
+6. `reserva`
+7. `pago`
+8. `usuario`
 
-Inmueble.IdTipo
-        ↓
-TipoInmueble.IdTipo
+---
 
+# Modelo de datos
 
-Reserva.IdInquilino
-        ↓
-Inquilino.IdInquilino
+## Propietario
 
+Representa a los propietarios de los inmuebles administrados por la inmobiliaria.
 
-Reserva.IdInmueble
-        ↓
-Inmueble.IdInmueble
-```
+Contiene información personal y de contacto y se relaciona con los inmuebles registrados.
 
-## Funcionalidades del sistema
+## Inquilino
 
-### Propietarios
+Representa a las personas que realizan reservas de los inmuebles.
 
-El módulo de propietarios permite:
+Contiene datos personales, de contacto y domicilio de origen.
 
-- Listar propietarios.
-- Registrar nuevos propietarios.
-- Consultar detalles.
-- Modificar datos.
-- Realizar baja lógica.
+## TipoInmueble
 
-La baja lógica modifica el campo `Estado` en lugar de eliminar físicamente el registro de la base de datos.
-
-### Inquilinos
-
-El módulo de inquilinos permite:
-
-- Listar inquilinos.
-- Registrar nuevos inquilinos.
-- Consultar detalles.
-- Modificar información.
-- Realizar baja lógica.
-
-### Tipos de inmueble
-
-Permite administrar los distintos tipos de inmueble disponibles.
+Permite clasificar los inmuebles según su tipo.
 
 Por ejemplo:
 
-- Casa.
-- Departamento.
-- Cabaña.
+- Casa
+- Departamento
+- Cabaña
+- Local
+- Otros
 
-Los tipos de inmueble también utilizan baja lógica mediante el campo `Estado`.
+## Inmueble
 
-### Inmuebles
+Representa las propiedades disponibles para alquiler temporal.
 
-Cada inmueble se encuentra relacionado con:
+Entre sus datos se encuentran:
 
-- Un propietario.
-- Un tipo de inmueble.
+- Dirección
+- Tipo de inmueble
+- Propietario
+- Cupo
+- Coordenadas
+- Precio por día
+- Porcentaje mínimo de reserva
+- Estado
+- Fotografía
 
-Entre sus datos principales se encuentran:
+## SolicitudReserva
 
-- Dirección.
-- Cupo de personas.
-- Tipo de inmueble.
-- Coordenadas.
-- Precio por día.
-- Propietario.
-- Estado.
+Permite registrar solicitudes relacionadas con la intención de reservar un inmueble.
 
-Al registrar un inmueble, el sistema permite seleccionar el propietario correspondiente mostrando su nombre y apellido.
+## Reserva
 
-### Reservas
+Representa el alquiler temporal de un inmueble por parte de un inquilino.
 
-Las reservas relacionan:
+Incluye:
 
-```text
-Inquilino + Inmueble + Período
-```
+- Inquilino
+- Inmueble
+- Fecha desde
+- Fecha hasta
+- Monto por día
+- Estado
+- Datos relacionados con creación y finalización
+- Información necesaria para el seguimiento de la reserva
 
-Para registrar una reserva se selecciona:
+## Pago
 
-1. Inquilino.
-2. Tipo de inmueble.
-3. Inmueble.
-4. Fecha desde.
-5. Fecha hasta.
+Registra los pagos asociados a las reservas.
 
-El sistema muestra el nombre completo del inquilino.
+Permite mantener información sobre los importes abonados y su relación con la reserva correspondiente.
 
-Al seleccionar un tipo de inmueble, se filtran automáticamente los inmuebles pertenecientes a esa categoría.
+## Usuario
 
-Para cada inmueble se puede visualizar información como:
+Representa a los usuarios que pueden autenticarse en el sistema.
 
-- Dirección.
-- Capacidad de personas.
-- Precio por día.
+Permite gestionar:
 
-El monto diario de la reserva no es ingresado manualmente por el usuario.
-
-El sistema obtiene automáticamente el precio por día configurado en el inmueble seleccionado.
-
-## Control de disponibilidad
-
-Antes de registrar una nueva reserva, el sistema verifica si el inmueble seleccionado posee otra reserva activa que se superponga con las fechas ingresadas.
-
-La validación utiliza la siguiente lógica:
-
-```text
-FechaDesde existente < FechaHasta nueva
-
-Y
-
-FechaHasta existente > FechaDesde nueva
-```
-
-Si existe una superposición de fechas, el sistema impide registrar la nueva reserva.
-
-De esta manera se evita que un mismo inmueble tenga dos reservas activas para períodos que se superponen.
-
-## Finalización anticipada de una reserva
-
-Una reserva activa puede finalizarse antes de la fecha originalmente pactada.
-
-El sistema permite registrar la fecha de finalización anticipada y calcula automáticamente una penalidad.
-
-### Regla de negocio
-
-Si el inquilino cumplió menos de la mitad del período reservado:
-
-```text
-Multa = 50 % del valor correspondiente a los días restantes
-```
-
-Si el inquilino cumplió la mitad o más del período reservado:
-
-```text
-Multa = 25 % del valor correspondiente a los días restantes
-```
-
-Para realizar el cálculo, el sistema determina:
-
-```text
-Días pactados
-      ↓
-Días cumplidos
-      ↓
-Días restantes
-      ↓
-Monto de los días restantes
-      ↓
-Aplicación del 50 % o 25 %
-      ↓
-Multa final
-```
-
-Al finalizar anticipadamente una reserva se almacenan:
-
-- Fecha de terminación anticipada.
-- Multa calculada.
-- Estado de la reserva.
-
-En el detalle de la reserva se puede visualizar:
-
-- Fecha de inicio.
-- Fecha pactada de finalización.
-- Fecha de finalización anticipada.
-- Días pactados.
-- Días cumplidos.
-- Días restantes.
-- Porcentaje de penalidad aplicado.
-- Monto de la multa.
+- Nombre
+- Email
+- Contraseña almacenada mediante hash
+- Rol
+- Estado
+- Avatar
 
 ---
 
-# Puesta en marcha del proyecto
+# Diagrama Entidad-Relación
 
-Para ejecutar el proyecto por primera vez en una computadora nueva se deben realizar los siguientes pasos.
+El siguiente esquema representa de manera simplificada las principales relaciones de la base de datos:
 
-## 1. Requisitos previos
+```text
+┌─────────────────┐
+│   PROPIETARIO   │
+└────────┬────────┘
+         │ 1
+         │
+         │ N
+┌────────▼────────┐       ┌──────────────────┐
+│    INMUEBLE     │ N ──1 │  TIPO_INMUEBLE  │
+└────────┬────────┘       └──────────────────┘
+         │
+         │ 1
+         │
+         │ N
+┌────────▼────────┐
+│     RESERVA     │
+└───┬─────────┬───┘
+    │         │
+    │ N       │ 1
+    │         │
+    │ 1       │ N
+┌───▼───────┐ ┌───────────▼──────┐
+│ INQUILINO │ │       PAGO       │
+└───────────┘ └──────────────────┘
 
-Antes de comenzar se debe contar con:
 
-- .NET 10.
-- MySQL.
-- MySQL Workbench o una herramienta equivalente.
-- Git.
-- Un navegador web.
+INQUILINO ───── SOLICITUD_RESERVA ───── INMUEBLE
 
-Opcionalmente se puede utilizar:
 
-- Visual Studio Code.
-- GitHub Desktop.
-
-Para comprobar la versión instalada de .NET:
-
-```powershell
-dotnet --version
+USUARIO
+   │
+   ├──── autenticación y roles
+   │
+   └──── trazabilidad de operaciones
 ```
 
-El proyecto fue desarrollado utilizando .NET 10.
+Las claves primarias, claves foráneas y relaciones definitivas se encuentran especificadas en:
 
-## 2. Clonar el repositorio
-
-Desde una terminal ejecutar:
-
-```powershell
-git clone https://github.com/LaloSL/InmobiliariaCC2.git
+```text
+Inmobiliaria_CC2_Final.sql
 ```
-
-Luego ingresar a la carpeta del proyecto:
-
-```powershell
-cd InmobiliariaCC2
-```
-
-También se puede clonar el repositorio utilizando GitHub Desktop.
 
 ---
 
-# Creación de la base de datos
+# Funcionalidades principales
 
-Dentro de los archivos del repositorio se encuentra incluido un archivo `.sql` con la estructura de la base de datos.
+## Gestión de Propietarios
 
-Este archivo puede abrirse y ejecutarse directamente utilizando MySQL Workbench.
+El sistema permite:
 
-También se incluye a continuación el query completo necesario para crear la base de datos desde cero.
+- Registrar propietarios.
+- Consultar propietarios.
+- Modificar sus datos.
+- Realizar baja lógica.
+- Buscar propietarios.
+- Paginar los resultados.
+- Consultar los inmuebles asociados a un propietario.
 
-## Script completo de creación
+---
 
-Abrir MySQL Workbench, crear una nueva pestaña SQL, copiar el siguiente script y ejecutarlo.
+## Gestión de Inquilinos
+
+Permite:
+
+- Registrar inquilinos.
+- Consultar inquilinos.
+- Modificar sus datos.
+- Realizar baja lógica.
+- Buscar por DNI, nombre, apellido, email, teléfono o dirección.
+- Paginar los resultados.
+
+---
+
+## Gestión de Tipos de Inmueble
+
+Permite administrar las diferentes categorías utilizadas para clasificar los inmuebles.
+
+---
+
+## Gestión de Inmuebles
+
+Permite:
+
+- Registrar inmuebles.
+- Asociar un inmueble a un propietario.
+- Asociar un tipo de inmueble.
+- Definir cupo.
+- Definir precio por día.
+- Definir porcentaje mínimo de reserva.
+- Registrar coordenadas.
+- Cargar fotografías.
+- Consultar detalles.
+- Modificar información.
+- Realizar baja lógica.
+- Buscar inmuebles.
+- Paginar resultados.
+
+El sistema permite además buscar inmuebles disponibles para un período determinado.
+
+---
+
+# Disponibilidad
+
+El sistema permite consultar inmuebles disponibles entre dos fechas.
+
+La búsqueda utiliza las reservas existentes para evitar ofrecer inmuebles que se encuentren ocupados durante el período solicitado.
+
+Esto permite controlar superposiciones de fechas y mejorar la gestión de disponibilidad.
+
+---
+
+# Solicitudes de reserva
+
+El sistema incorpora la gestión de solicitudes de reserva como parte del proceso de alquiler temporal.
+
+Las solicitudes permiten registrar la intención de reservar un inmueble y mantener el seguimiento correspondiente dentro del sistema.
+
+---
+
+# Gestión de Reservas
+
+El módulo de reservas permite:
+
+- Seleccionar un inquilino.
+- Seleccionar un inmueble.
+- Definir fecha de inicio.
+- Definir fecha de finalización.
+- Consultar disponibilidad.
+- Evitar reservas incompatibles por superposición de fechas.
+- Registrar el valor correspondiente al alquiler.
+- Consultar reservas.
+- Mantener el estado de cada reserva.
+
+El valor del alquiler se relaciona con el precio por día definido para el inmueble y la duración de la estadía.
+
+El sistema permite conocer el monto correspondiente a la reserva y el importe requerido según el porcentaje de reserva configurado para el inmueble.
+
+---
+
+# Pagos
+
+El sistema cuenta con un módulo para registrar pagos asociados a las reservas.
+
+Esto permite realizar el seguimiento económico de cada alquiler y conservar la relación entre el pago y la reserva correspondiente.
+
+La información de pagos se utiliza además para la consulta y gestión administrativa.
+
+---
+
+# Usuarios y autenticación
+
+El sistema utiliza autenticación mediante cookies.
+
+Los usuarios poseen roles que permiten controlar el acceso a diferentes funcionalidades.
+
+Los roles principales son:
+
+## Administrador
+
+Posee los permisos administrativos del sistema.
+
+Puede acceder a las funciones de administración y mantenimiento habilitadas para su rol.
+
+## Empleado
+
+Puede acceder a las funciones operativas habilitadas para la gestión inmobiliaria.
+
+## Visitante
+
+Corresponde a un usuario no autenticado.
+
+Puede acceder únicamente a las funciones públicas habilitadas por la aplicación.
+
+---
+
+# Perfil de usuario
+
+Los usuarios autenticados disponen de un perfil personal.
+
+El sistema permite:
+
+- Consultar los datos del perfil.
+- Modificar nombre.
+- Modificar email.
+- Cambiar contraseña.
+- Cargar o modificar avatar.
+- Visualizar el rol del usuario.
+
+El rol no puede modificarse desde el perfil personal.
+
+---
+
+# Seguridad
+
+Las contraseñas no se almacenan en texto plano.
+
+El sistema utiliza hashing de contraseñas y validación de credenciales durante el inicio de sesión.
+
+Las funcionalidades restringidas utilizan autorización mediante roles.
+
+Ejemplo:
+
+```csharp
+[Authorize(Roles = "Administrador")]
+```
+
+o:
+
+```csharp
+[Authorize(Roles = "Administrador,Empleado")]
+```
+
+También se utiliza protección antifalsificación en formularios POST mediante:
+
+```csharp
+[ValidateAntiForgeryToken]
+```
+
+---
+
+# Búsquedas y paginación
+
+Los listados principales incorporan mecanismos de búsqueda.
+
+En los módulos implementados con paginación, el procesamiento se realiza del lado del servidor.
+
+Las consultas utilizan SQL con filtros y paginación mediante:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS inmobiliaria_cc2;
-
-USE inmobiliaria_cc2;
-
-
--- =====================================================
--- TABLA: TipoInmueble
--- =====================================================
-
-CREATE TABLE TipoInmueble
-(
-    IdTipo INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre VARCHAR(50) NOT NULL,
-    Estado BOOLEAN NOT NULL DEFAULT TRUE
-);
-
-
--- =====================================================
--- TABLA: Propietario
--- =====================================================
-
-CREATE TABLE Propietario
-(
-    IdPropietario INT AUTO_INCREMENT PRIMARY KEY,
-    Dni VARCHAR(20) NOT NULL,
-    Nombre VARCHAR(50) NOT NULL,
-    Apellido VARCHAR(50) NOT NULL,
-    Email VARCHAR(100) NOT NULL,
-    Telefono VARCHAR(30) NOT NULL,
-    Direccion VARCHAR(150) NULL,
-    Estado BOOLEAN NOT NULL DEFAULT TRUE,
-    FechaCreacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- =====================================================
--- TABLA: Inquilino
--- =====================================================
-
-CREATE TABLE Inquilino
-(
-    IdInquilino INT AUTO_INCREMENT PRIMARY KEY,
-    Dni VARCHAR(20) NOT NULL,
-    Nombre VARCHAR(50) NOT NULL,
-    Apellido VARCHAR(50) NOT NULL,
-    Email VARCHAR(100) NOT NULL,
-    Telefono VARCHAR(30) NOT NULL,
-    DireccionOrigen VARCHAR(150) NULL,
-    Estado BOOLEAN NOT NULL DEFAULT TRUE,
-    FechaCreacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- =====================================================
--- TABLA: Inmueble
--- =====================================================
-
-CREATE TABLE Inmueble
-(
-    IdInmueble INT AUTO_INCREMENT PRIMARY KEY,
-    Direccion VARCHAR(255) NOT NULL,
-    Cupo INT NOT NULL,
-    IdTipo INT NOT NULL,
-    Coordenadas VARCHAR(100) NULL,
-    PrecioDia DECIMAL(10,2) NOT NULL,
-    IdPropietario INT NOT NULL,
-    Estado BOOLEAN NOT NULL DEFAULT TRUE,
-
-    CONSTRAINT FK_Inmueble_TipoInmueble
-        FOREIGN KEY (IdTipo)
-        REFERENCES TipoInmueble(IdTipo),
-
-    CONSTRAINT FK_Inmueble_Propietario
-        FOREIGN KEY (IdPropietario)
-        REFERENCES Propietario(IdPropietario)
-);
-
-
--- =====================================================
--- TABLA: Reserva
--- =====================================================
-
-CREATE TABLE Reserva
-(
-    IdReserva INT AUTO_INCREMENT PRIMARY KEY,
-    IdInquilino INT NOT NULL,
-    IdInmueble INT NOT NULL,
-    MontoDia DECIMAL(10,2) NOT NULL,
-    FechaDesde DATE NOT NULL,
-    FechaHasta DATE NOT NULL,
-    FechaTerminacionAnticipada DATE NULL,
-    Multa DECIMAL(10,2) NOT NULL DEFAULT 0,
-    Estado BOOLEAN NOT NULL DEFAULT TRUE,
-
-    CONSTRAINT FK_Reserva_Inquilino
-        FOREIGN KEY (IdInquilino)
-        REFERENCES Inquilino(IdInquilino),
-
-    CONSTRAINT FK_Reserva_Inmueble
-        FOREIGN KEY (IdInmueble)
-        REFERENCES Inmueble(IdInmueble)
-);
+LIMIT
+OFFSET
 ```
 
-## Orden de creación
+De esta manera no es necesario cargar todos los registros de la base de datos para mostrar una página de resultados.
 
-Las tablas que son referenciadas mediante claves foráneas deben existir antes que las tablas que dependen de ellas.
+Se implementaron búsquedas y paginación, entre otros, en los listados de:
 
-La estructura general es:
+- Inmuebles
+- Propietarios
+- Inquilinos
+
+---
+
+# Informes
+
+El sistema incorpora un módulo específico de informes para facilitar la gestión de la inmobiliaria.
+
+Entre los informes implementados se encuentran:
+
+## Inmuebles más reservados
+
+Presenta un ranking de inmuebles según la cantidad de reservas realizadas durante un período determinado.
+
+## Inmuebles sin reservas
+
+Permite consultar propiedades que no registraron reservas durante una determinada cantidad de días.
+
+## Reservas vigentes
+
+Muestra las reservas activas cuyo período de alquiler comprende la fecha actual.
+
+## Próximos vencimientos
+
+Permite consultar reservas cuya fecha de finalización se encuentra próxima.
+
+La cantidad de días puede utilizarse como criterio para la consulta.
+
+## Inmuebles y estado
+
+Permite consultar los inmuebles registrados y filtrarlos según su estado.
+
+## Inmuebles por propietario
+
+Permite seleccionar un propietario y consultar los inmuebles asociados al mismo.
+
+## Disponibilidad entre fechas
+
+Permite determinar qué inmuebles se encuentran disponibles para un período determinado.
+
+---
+
+# Credenciales de prueba
+
+Para facilitar la evaluación del sistema se incluyen usuarios de prueba.
+
+## Administrador
 
 ```text
-TipoInmueble ──────┐
-                   │
-                   ▼
-                Inmueble
-                   ▲
-                   │
-Propietario ───────┘
-                   │
-                   ▼
-                Reserva
-                   ▲
-                   │
-Inquilino ─────────┘
+Email: admin@inmobiliaria.com
+Contraseña: Admin123!
 ```
 
-Por este motivo:
+## Empleado
 
-- `TipoInmueble` debe existir antes de crear `Inmueble`.
-- `Propietario` debe existir antes de crear `Inmueble`.
-- `Inquilino` debe existir antes de crear `Reserva`.
-- `Inmueble` debe existir antes de crear `Reserva`.
+```text
+Email: empleado@inmobiliaria.com
+Contraseña: 123456
+```
 
-## Procedimiento utilizando MySQL Workbench
+Estas credenciales están destinadas exclusivamente a la ejecución y evaluación académica del proyecto.
+
+---
+
+# Requisitos para ejecutar el proyecto
+
+Para ejecutar el sistema se necesita:
+
+- .NET SDK compatible con el proyecto.
+- MySQL Server.
+- MySQL Workbench o herramienta equivalente.
+- Git, en caso de clonar el repositorio.
+- Visual Studio Code, Visual Studio o IDE compatible con .NET.
+
+---
+
+# Instalación de la base de datos
+
+El repositorio incluye:
+
+```text
+Inmobiliaria_CC2_Final.sql
+```
+
+Este archivo permite crear e inicializar la base de datos.
+
+## Opción 1 - MySQL Workbench
 
 1. Abrir MySQL Workbench.
-2. Conectarse al servidor local de MySQL.
-3. Abrir una nueva pestaña SQL.
-4. Abrir el archivo `.sql` incluido en el repositorio o copiar el script anterior.
-5. Ejecutar el script completo.
-6. Actualizar la lista de bases de datos.
-7. Verificar que exista `inmobiliaria_cc2`.
+2. Conectarse al servidor MySQL local.
+3. Seleccionar:
 
-La estructura esperada será:
+```text
+File → Open SQL Script
+```
+
+4. Abrir:
+
+```text
+Inmobiliaria_CC2_Final.sql
+```
+
+5. Ejecutar el script completo.
+
+El script crea e inicializa la base:
 
 ```text
 inmobiliaria_cc2
-│
-├── TipoInmueble
-├── Propietario
-├── Inquilino
-├── Inmueble
-└── Reserva
 ```
 
-Para verificar las tablas desde MySQL también se puede ejecutar:
-
-```sql
-USE inmobiliaria_cc2;
-
-SHOW TABLES;
-```
+6. Actualizar el panel `Schemas`.
+7. Verificar que aparezca la base `inmobiliaria_cc2` y sus tablas.
 
 ---
 
-# Configuración de la conexión a MySQL
+# Configuración de la conexión
 
-Por razones de seguridad, la contraseña de MySQL no se almacena directamente dentro de `appsettings.json` y tampoco se sube al repositorio de GitHub.
-
-El proyecto utiliza User Secrets de .NET para almacenar localmente la cadena de conexión.
-
-Cada integrante debe configurar en su computadora su propia contraseña de MySQL.
-
-Desde una terminal ubicada dentro de la carpeta del proyecto ejecutar:
-
-```powershell
-dotnet user-secrets set "ConnectionStrings:CadenaSQL" "Server=localhost;Port=3306;Database=inmobiliaria_cc2;User=root;Password=TU_CLAVE;"
-```
-
-Se debe reemplazar:
+La aplicación utiliza una cadena de conexión denominada:
 
 ```text
-TU_CLAVE
+CadenaSQL
 ```
 
-por la contraseña correspondiente al usuario local de MySQL.
+Por seguridad, la contraseña local de MySQL no debe almacenarse en el repositorio público.
 
-La estructura de la cadena de conexión es:
+Se recomienda utilizar **User Secrets**.
+
+Desde la carpeta raíz del proyecto ejecutar:
+
+```bash
+dotnet user-secrets init
+```
+
+Luego configurar la cadena de conexión:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:CadenaSQL" "Server=localhost;Port=3306;Database=inmobiliaria_cc2;User=root;Password=SU_PASSWORD;"
+```
+
+Reemplazar:
 
 ```text
-Server=localhost
-Port=3306
-Database=inmobiliaria_cc2
-User=root
-Password=contraseña local
+SU_PASSWORD
 ```
 
-La aplicación obtiene posteriormente la cadena mediante:
+por la contraseña correspondiente a la instalación local de MySQL.
 
-```csharp
-configuration.GetConnectionString("CadenaSQL")
-```
+Para verificar la configuración:
 
-La configuración de User Secrets queda almacenada de manera local en cada computadora.
-
-La contraseña no se incorpora al repositorio Git y no debe escribirse directamente dentro del código fuente.
-
-## Verificar User Secrets
-
-Para comprobar que la cadena de conexión fue guardada correctamente:
-
-```powershell
+```bash
 dotnet user-secrets list
 ```
-
-Deberá aparecer una entrada similar a:
-
-```text
-ConnectionStrings:CadenaSQL
-```
-
-Importante: no publicar ni compartir la contraseña de MySQL mediante GitHub, capturas de pantalla o archivos del proyecto.
 
 ---
 
 # Restaurar dependencias
 
-Una vez clonado el proyecto y creada la base de datos, desde la carpeta principal ejecutar:
+Desde la carpeta raíz del proyecto ejecutar:
 
-```powershell
+```bash
 dotnet restore
-```
-
-Este comando restaura los paquetes necesarios para compilar y ejecutar la aplicación.
-
-El paquete utilizado para realizar la conexión con MySQL es:
-
-```text
-MySql.Data
-```
-
-Para verificar los paquetes instalados:
-
-```powershell
-dotnet list package
 ```
 
 ---
 
 # Compilar el proyecto
 
-Antes de ejecutar la aplicación se recomienda comprobar que el proyecto compile correctamente.
+Para comprobar que el proyecto compile correctamente:
+
+```bash
+dotnet build
+```
+
+---
+
+# Ejecutar la aplicación
 
 Ejecutar:
 
-```powershell
-dotnet build
-```
-
-Si no existen problemas, la compilación deberá finalizar sin errores.
-
-Este paso permite detectar errores de código antes de iniciar la aplicación.
-
----
-
-# Ejecutar el proyecto
-
-Para iniciar la aplicación ejecutar:
-
-```powershell
+```bash
 dotnet run
 ```
 
-Una vez iniciada, la terminal mostrará una dirección local similar a:
+También puede utilizarse:
 
-```text
-http://localhost:5225
+```bash
+dotnet watch run
 ```
 
-El puerto puede variar dependiendo de la configuración de cada computadora.
-
-La dirección mostrada en la terminal debe abrirse desde un navegador web.
-
-Para detener la aplicación utilizar:
-
-```text
-Ctrl + C
-```
+Luego abrir en el navegador la dirección indicada por ASP.NET Core en la consola.
 
 ---
 
-# Resumen para levantar el proyecto desde cero
-
-El procedimiento general para ejecutar el sistema en una computadora nueva es:
+# Estructura general
 
 ```text
-Clonar repositorio
-        ↓
-Crear la base de datos
-        ↓
-Ejecutar el script SQL
-        ↓
-Configurar User Secrets
-        ↓
-dotnet restore
-        ↓
-dotnet build
-        ↓
-dotnet run
-        ↓
-Abrir la aplicación en el navegador
-```
-
-Los comandos principales son:
-
-```powershell
-dotnet restore
-dotnet build
-dotnet run
-```
-
-Para configurar la conexión:
-
-```powershell
-dotnet user-secrets set "ConnectionStrings:CadenaSQL" "Server=localhost;Port=3306;Database=inmobiliaria_cc2;User=root;Password=TU_CLAVE;"
-```
-
-Para verificar User Secrets:
-
-```powershell
-dotnet user-secrets list
-```
-
-Para verificar los paquetes:
-
-```powershell
-dotnet list package
-```
-
----
-
-# Organización del proyecto
-
-La estructura principal del proyecto es:
-
-```text
-InmobiliariaCC2
+InmobiliariaCC2/
 │
-├── Controllers
+├── Controllers/
+│   ├── HomeController.cs
 │   ├── PropietarioController.cs
 │   ├── InquilinoController.cs
 │   ├── TipoInmuebleController.cs
 │   ├── InmuebleController.cs
-│   └── ReservaController.cs
+│   ├── ReservaController.cs
+│   ├── UsuarioController.cs
+│   └── InformeController.cs
 │
-├── Models
+├── Models/
 │   ├── Propietario.cs
 │   ├── Inquilino.cs
 │   ├── TipoInmueble.cs
 │   ├── Inmueble.cs
-│   └── Reserva.cs
+│   ├── Reserva.cs
+│   ├── Usuario.cs
+│   └── modelos auxiliares
 │
-├── Repositories
+├── Repositories/
 │   ├── RepositorioPropietario.cs
 │   ├── RepositorioInquilino.cs
 │   ├── RepositorioTipoInmueble.cs
 │   ├── RepositorioInmueble.cs
-│   └── RepositorioReserva.cs
+│   ├── RepositorioReserva.cs
+│   ├── RepositorioUsuario.cs
+│   └── RepositorioInforme.cs
 │
-├── Views
-│   ├── Home
-│   ├── Propietario
-│   ├── Inquilino
-│   ├── TipoInmueble
-│   ├── Inmueble
-│   ├── Reserva
-│   └── Shared
+├── Views/
+│   ├── Home/
+│   ├── Propietario/
+│   ├── Inquilino/
+│   ├── TipoInmueble/
+│   ├── Inmueble/
+│   ├── Reserva/
+│   ├── Usuario/
+│   ├── Informe/
+│   └── Shared/
 │
-├── wwwroot
+├── wwwroot/
+│   ├── css/
+│   ├── js/
+│   ├── lib/
+│   └── uploads/
+│
+├── .gitignore
+├── Inmobiliaria_CC2_Final.sql
+├── InmobiliariaCC2.csproj
 ├── Program.cs
 ├── appsettings.json
-├── InmobiliariaCC2.csproj
-├── README.md
-└── archivo de base de datos .sql
+└── README.md
 ```
 
 ---
 
-# Arquitectura utilizada
+# Archivo .gitignore
 
-El proyecto utiliza el patrón MVC.
+El proyecto incluye un archivo `.gitignore` adaptado al entorno .NET y Visual Studio.
 
-```text
-             Usuario
-                │
-                ▼
-            Controller
-             /       \
-            ▼         ▼
-         Model       View
-            │
-            ▼
-       Repository
-            │
-            ▼
-          MySQL
-```
+Entre otros elementos, evita versionar:
 
-## Models
-
-Representan las entidades principales del sistema:
-
-- Propietario.
-- Inquilino.
-- TipoInmueble.
-- Inmueble.
-- Reserva.
-
-Los modelos contienen las propiedades que representan los datos utilizados por la aplicación.
-
-## Controllers
-
-Los controladores reciben las solicitudes realizadas por el usuario desde las vistas y coordinan las diferentes operaciones del sistema.
-
-Por ejemplo:
-
-```text
-Usuario
-   ↓
-ReservaController
-   ↓
-RepositorioReserva
-   ↓
-MySQL
-```
-
-## Repositories
-
-Los repositorios contienen las operaciones necesarias para acceder a la base de datos.
-
-En ellos se utilizan:
-
-```text
-MySqlConnection
-MySqlCommand
-MySqlDataReader
-```
-
-y se escriben manualmente consultas SQL para:
-
-- Listar registros.
-- Buscar registros por ID.
-- Insertar registros.
-- Modificar registros.
-- Realizar bajas lógicas.
-- Realizar INNER JOIN.
-- Verificar disponibilidad.
-- Registrar reservas.
-- Finalizar reservas anticipadamente.
-
-Ejemplo general:
-
-```csharp
-using (var connection = new MySqlConnection(_connectionString))
-{
-    var sql = @"SELECT *
-                FROM Propietario
-                WHERE Estado = 1;";
-
-    using (var command = new MySqlCommand(sql, connection))
-    {
-        connection.Open();
-
-        using (var reader = command.ExecuteReader())
-        {
-            // Lectura de los registros
-        }
-    }
-}
-```
-
-## Views
-
-Las vistas contienen las interfaces utilizadas por el usuario.
-
-Entre otras operaciones permiten:
-
-- Visualizar listados.
-- Crear registros.
-- Editar registros.
-- Consultar detalles.
-- Seleccionar propietarios.
-- Seleccionar inquilinos.
-- Seleccionar tipos de inmueble.
-- Seleccionar inmuebles.
-- Registrar reservas.
-- Consultar detalles de reservas.
-
-Las vistas utilizan Razor, HTML, Bootstrap y JavaScript.
+- `bin/`
+- `obj/`
+- `.vs/`
+- archivos temporales
+- resultados de compilación
+- configuraciones locales
+- archivos `.env`
+- paquetes y cachés generados
 
 ---
 
-# Baja lógica
+# Consideraciones finales
 
-En diferentes entidades del sistema no se realiza una eliminación física del registro.
+El proyecto integra los principales procesos necesarios para la administración de alquileres temporales mediante una aplicación web desarrollada con ASP.NET Core MVC.
 
-En cambio, se modifica el campo:
+La solución contempla la gestión de propietarios, inquilinos, inmuebles, solicitudes, reservas, pagos y usuarios, junto con mecanismos de autenticación, autorización por roles, control de disponibilidad, búsqueda, paginación e informes.
 
-```text
-Estado
-```
+La persistencia se implementa mediante MySQL y consultas SQL manuales organizadas en repositorios, manteniendo separadas las responsabilidades de acceso a datos, lógica de control y presentación.
 
-Por ejemplo:
-
-```sql
-UPDATE Propietario
-SET Estado = 0
-WHERE IdPropietario = @id;
-```
-
-De esta manera el registro permanece almacenado en la base de datos, pero deja de aparecer entre los registros activos.
-
----
-
-# Uso de JavaScript
-
-JavaScript es utilizado en determinadas vistas para realizar operaciones dinámicas.
-
-Por ejemplo, al crear una reserva:
-
-```text
-Seleccionar Tipo de Inmueble
-             ↓
-JavaScript realiza una solicitud
-             ↓
-ReservaController
-             ↓
-ObtenerInmueblesPorTipo()
-             ↓
-RepositorioInmueble
-             ↓
-MySQL
-             ↓
-Se cargan los inmuebles correspondientes
-```
-
-De esta manera, al seleccionar un tipo de inmueble, el usuario puede visualizar únicamente los inmuebles pertenecientes a ese tipo.
-
-Además se muestra información como:
-
-```text
-Dirección | Capacidad | Precio por día
-```
-
----
-
-# Control de versiones
-
-El proyecto utiliza Git y GitHub para el control de versiones y el trabajo colaborativo.
-
-Antes de comenzar a trabajar se recomienda actualizar la copia local:
-
-```powershell
-git pull origin main
-```
-
-Para verificar los archivos modificados:
-
-```powershell
-git status
-```
-
-Para agregar los cambios:
-
-```powershell
-git add .
-```
-
-Para realizar un commit:
-
-```powershell
-git commit -m "Descripcion del cambio"
-```
-
-Para subir los cambios:
-
-```powershell
-git push origin main
-```
-
-El flujo habitual de trabajo es:
-
-```text
-git pull origin main
-        ↓
-Realizar modificaciones
-        ↓
-git status
-        ↓
-git add .
-        ↓
-git commit
-        ↓
-git push origin main
-```
-
-Si otro integrante realizó modificaciones en el repositorio remoto, los cambios deben integrarse antes de realizar un nuevo `push`.
-
-No se recomienda utilizar `force push` para resolver conflictos en un repositorio compartido.
-
----
-
-# Importante para nuevos integrantes
-
-Antes de comenzar a trabajar con el proyecto se debe comprobar:
-
-1. Tener instalado .NET 10.
-2. Tener MySQL instalado y funcionando.
-3. Tener MySQL Workbench o una herramienta equivalente.
-4. Tener Git instalado.
-5. Clonar el repositorio.
-6. Ejecutar el archivo SQL incluido en el proyecto o utilizar el script disponible en este README.
-7. Verificar que exista la base `inmobiliaria_cc2`.
-8. Verificar que estén creadas todas las tablas.
-9. Configurar `ConnectionStrings:CadenaSQL` mediante User Secrets.
-10. Ejecutar `dotnet restore`.
-11. Ejecutar `dotnet build`.
-12. Ejecutar `dotnet run`.
-
-La contraseña de MySQL nunca debe escribirse directamente dentro del código fuente ni subirse al repositorio de GitHub.
-
----
-
-# Comandos útiles
-
-Comprobar la versión de .NET:
-
-```powershell
-dotnet --version
-```
-
-Restaurar paquetes:
-
-```powershell
-dotnet restore
-```
-
-Compilar:
-
-```powershell
-dotnet build
-```
-
-Ejecutar:
-
-```powershell
-dotnet run
-```
-
-Ver paquetes instalados:
-
-```powershell
-dotnet list package
-```
-
-Ver User Secrets:
-
-```powershell
-dotnet user-secrets list
-```
-
-Ver estado de Git:
-
-```powershell
-git status
-```
-
-Actualizar el repositorio:
-
-```powershell
-git pull origin main
-```
-
-Agregar cambios:
-
-```powershell
-git add .
-```
-
-Crear un commit:
-
-```powershell
-git commit -m "Descripcion del cambio"
-```
-
-Subir cambios:
-
-```powershell
-git push origin main
-```
-
----
-
-# Objetivo académico
-
-El proyecto fue desarrollado como trabajo académico de programación web.
-
-Su desarrollo permite aplicar conceptos relacionados con:
-
-- ASP.NET Core MVC.
-- Programación en C#.
-- Bases de datos MySQL.
-- Consultas SQL manuales.
-- Patrón MVC.
-- Repositorios.
-- Relaciones entre tablas.
-- Claves primarias y foráneas.
-- Validaciones.
-- Reglas de negocio.
-- JavaScript.
-- Git.
-- GitHub.
-- Trabajo colaborativo.
-
-El objetivo principal es comprender cómo interactúan las distintas capas de una aplicación web y cómo se realiza el acceso a una base de datos mediante consultas SQL desarrolladas manualmente.
+El archivo `Inmobiliaria_CC2_Final.sql` permite reconstruir la base utilizada para la evaluación, mientras que las credenciales incluidas en este documento permiten acceder a los perfiles de Administrador y Empleado.

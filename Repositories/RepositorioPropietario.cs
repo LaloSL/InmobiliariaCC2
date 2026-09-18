@@ -225,5 +225,156 @@ namespace InmobiliariaCC2.Repositories
                 }
             }
         }
+        public List<Propietario> ObtenerPaginados(
+            string? buscar,
+            int pagina,
+            int cantidadPorPagina)
+        {
+            var lista = new List<Propietario>();
+
+            if (pagina < 1)
+                pagina = 1;
+
+            if (cantidadPorPagina < 1)
+                cantidadPorPagina = 5;
+
+            int offset =
+                (pagina - 1) * cantidadPorPagina;
+
+            using (var connection =
+                new MySqlConnection(_connectionString))
+            {
+                var sql = @"
+            SELECT
+                IdPropietario,
+                Dni,
+                Nombre,
+                Apellido,
+                Email,
+                Telefono,
+                Direccion,
+                Estado,
+                FechaCreacion
+            FROM Propietario
+            WHERE Estado = 1
+              AND (
+                    @buscar = ''
+                    OR Dni LIKE CONCAT('%', @buscar, '%')
+                    OR Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR Apellido LIKE CONCAT('%', @buscar, '%')
+                    OR Email LIKE CONCAT('%', @buscar, '%')
+                    OR Telefono LIKE CONCAT('%', @buscar, '%')
+                    OR CONCAT(Nombre, ' ', Apellido)
+                        LIKE CONCAT('%', @buscar, '%')
+                  )
+            ORDER BY Apellido ASC, Nombre ASC
+            LIMIT @cantidad
+            OFFSET @offset;
+        ";
+
+                using (var command =
+                    new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue(
+                        "@buscar",
+                        buscar?.Trim() ?? ""
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@cantidad",
+                        cantidadPorPagina
+                    );
+
+                    command.Parameters.AddWithValue(
+                        "@offset",
+                        offset
+                    );
+
+                    connection.Open();
+
+                    using (var reader =
+                        command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new Propietario
+                            {
+                                IdPropietario =
+                                    reader.GetInt32("IdPropietario"),
+
+                                Dni =
+                                    reader.GetString("Dni"),
+
+                                Nombre =
+                                    reader.GetString("Nombre"),
+
+                                Apellido =
+                                    reader.GetString("Apellido"),
+
+                                Email =
+                                    reader.GetString("Email"),
+
+                                Telefono =
+                                    reader.GetString("Telefono"),
+
+                                Direccion =
+                                    reader.IsDBNull(
+                                        reader.GetOrdinal("Direccion"))
+                                        ? null
+                                        : reader.GetString("Direccion"),
+
+                                Estado =
+                                    reader.GetBoolean("Estado"),
+
+                                FechaCreacion =
+                                    reader.GetDateTime("FechaCreacion")
+                            });
+                        }
+                    }
+                }
+            }
+
+            return lista;
+        }
+
+
+        public int ContarPaginados(string? buscar)
+        {
+            using (var connection =
+                new MySqlConnection(_connectionString))
+            {
+                var sql = @"
+            SELECT COUNT(*)
+            FROM Propietario
+            WHERE Estado = 1
+              AND (
+                    @buscar = ''
+                    OR Dni LIKE CONCAT('%', @buscar, '%')
+                    OR Nombre LIKE CONCAT('%', @buscar, '%')
+                    OR Apellido LIKE CONCAT('%', @buscar, '%')
+                    OR Email LIKE CONCAT('%', @buscar, '%')
+                    OR Telefono LIKE CONCAT('%', @buscar, '%')
+                    OR CONCAT(Nombre, ' ', Apellido)
+                        LIKE CONCAT('%', @buscar, '%')
+                  );
+        ";
+
+                using (var command =
+                    new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue(
+                        "@buscar",
+                        buscar?.Trim() ?? ""
+                    );
+
+                    connection.Open();
+
+                    return Convert.ToInt32(
+                        command.ExecuteScalar()
+                    );
+                }
+            }
+        }
+
     }
 }

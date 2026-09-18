@@ -15,34 +15,67 @@ namespace InmobiliariaCC2.Controllers
             _repositorio = repositorio;
         }
 
-        // GET: Inquilino
         [Authorize(Roles = "Administrador,Empleado")]
-        public IActionResult Index()
+        public IActionResult Index(
+            string? buscar,
+            int pagina = 1)
         {
-            var lista = _repositorio.ObtenerTodos();
+            const int cantidadPorPagina = 5;
+
+            if (pagina < 1)
+            {
+                pagina = 1;
+            }
+
+            int totalRegistros =
+                _repositorio.ContarPaginados(buscar);
+
+            int totalPaginas =
+                (int)Math.Ceiling(
+                    totalRegistros /
+                    (double)cantidadPorPagina
+                );
+
+            if (totalPaginas > 0 &&
+                pagina > totalPaginas)
+            {
+                pagina = totalPaginas;
+            }
+
+            var lista =
+                _repositorio.ObtenerPaginados(
+                    buscar,
+                    pagina,
+                    cantidadPorPagina
+                );
+
+            ViewBag.Buscar = buscar;
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TotalPaginas = totalPaginas;
+            ViewBag.TotalRegistros = totalRegistros;
+
             return View(lista);
         }
 
-        // GET: Inquilino/Details/5
         [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Details(int id)
         {
             var inquilino = _repositorio.ObtenerPorId(id);
+
             if (inquilino == null)
             {
                 return NotFound();
             }
+
             return View(inquilino);
         }
 
-        // GET: Inquilino/Create
         [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Inquilino/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
@@ -51,29 +84,36 @@ namespace InmobiliariaCC2.Controllers
             if (ModelState.IsValid)
             {
                 _repositorio.Guardar(inquilino);
-                TempData["Mensaje"] = "Inquilino creado exitosamente.";
+
+                TempData["Mensaje"] =
+                    "Inquilino creado exitosamente.";
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(inquilino);
         }
 
-        // GET: Inquilino/Edit/5
         [Authorize(Roles = "Administrador,Empleado")]
         public IActionResult Edit(int id)
         {
-            var inquilino = _repositorio.ObtenerPorId(id);
+            var inquilino =
+                _repositorio.ObtenerPorId(id);
+
             if (inquilino == null)
             {
                 return NotFound();
             }
+
             return View(inquilino);
         }
 
-        // POST: Inquilino/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Empleado")]
-        public IActionResult Edit(int id, Inquilino inquilino)
+        public IActionResult Edit(
+            int id,
+            Inquilino inquilino)
         {
             if (id != inquilino.IdInquilino)
             {
@@ -83,32 +123,40 @@ namespace InmobiliariaCC2.Controllers
             if (ModelState.IsValid)
             {
                 _repositorio.Modificar(inquilino);
-                TempData["Mensaje"] = "Inquilino actualizado exitosamente.";
+
+                TempData["Mensaje"] =
+                    "Inquilino actualizado exitosamente.";
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(inquilino);
         }
 
-        // GET: Inquilino/Delete/5
         [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
-            var inquilino = _repositorio.ObtenerPorId(id);
+            var inquilino =
+                _repositorio.ObtenerPorId(id);
+
             if (inquilino == null)
             {
                 return NotFound();
             }
+
             return View(inquilino);
         }
 
-        // POST: Inquilino/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
         public IActionResult DeleteConfirmed(int id)
         {
             _repositorio.Baja(id);
-            TempData["Mensaje"] = "Inquilino eliminado exitosamente.";
+
+            TempData["Mensaje"] =
+                "Inquilino eliminado exitosamente.";
+
             return RedirectToAction(nameof(Index));
         }
     }

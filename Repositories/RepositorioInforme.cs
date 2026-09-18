@@ -498,5 +498,288 @@ namespace InmobiliariaCC2.Repositories
 
             return lista;
         }
+
+        public List<InformeInmueble> ObtenerInmuebles(
+    bool? estado = null)
+        {
+            var lista = new List<InformeInmueble>();
+
+            using var connection =
+                new MySqlConnection(_connectionString);
+
+            var sql = @"
+        SELECT
+            i.IdInmueble,
+            i.Direccion,
+            i.PrecioDia,
+            i.Estado,
+            i.IdPropietario,
+
+            CONCAT(
+                p.Nombre,
+                ' ',
+                p.Apellido
+            ) AS Propietario
+
+        FROM Inmueble i
+
+        INNER JOIN Propietario p
+            ON p.IdPropietario =
+               i.IdPropietario
+
+        WHERE
+            (@estado IS NULL
+             OR i.Estado = @estado)
+
+        ORDER BY
+            i.Direccion ASC;
+    ";
+
+            using var command =
+                new MySqlCommand(sql, connection);
+
+            command.Parameters.Add(
+                "@estado",
+                MySqlDbType.Byte
+            ).Value =
+                estado.HasValue
+                    ? estado.Value
+                    : DBNull.Value;
+
+            connection.Open();
+
+            using var reader =
+                command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                lista.Add(
+                    new InformeInmueble
+                    {
+                        IdInmueble =
+                            reader.GetInt32(
+                                "IdInmueble"
+                            ),
+
+                        Direccion =
+                            reader.GetString(
+                                "Direccion"
+                            ),
+
+                        PrecioDia =
+                            reader.GetDecimal(
+                                "PrecioDia"
+                            ),
+
+                        Estado =
+                            reader.GetBoolean(
+                                "Estado"
+                            ),
+
+                        IdPropietario =
+                            reader.GetInt32(
+                                "IdPropietario"
+                            ),
+
+                        Propietario =
+                            reader.GetString(
+                                "Propietario"
+                            )
+                    }
+                );
+            }
+
+            return lista;
+        }
+
+        public List<InformeInmueble> ObtenerPorPropietario(int idPropietario)
+        {
+            var lista = new List<InformeInmueble>();
+
+            using var connection =
+                new MySqlConnection(_connectionString);
+
+            var sql = @"
+        SELECT
+            i.IdInmueble,
+            i.Direccion,
+            i.PrecioDia,
+            i.Estado,
+            i.IdPropietario,
+
+            CONCAT(
+                p.Nombre,
+                ' ',
+                p.Apellido
+            ) AS Propietario
+
+        FROM Inmueble i
+
+        INNER JOIN Propietario p
+            ON p.IdPropietario =
+               i.IdPropietario
+
+        WHERE i.IdPropietario = @idPropietario
+
+        ORDER BY i.Direccion ASC;
+    ";
+
+            using var command =
+                new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue(
+                "@idPropietario",
+                idPropietario
+            );
+
+            connection.Open();
+
+            using var reader =
+                command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                lista.Add(
+                    new InformeInmueble
+                    {
+                        IdInmueble =
+                            reader.GetInt32("IdInmueble"),
+
+                        Direccion =
+                            reader.GetString("Direccion"),
+
+                        PrecioDia =
+                            reader.GetDecimal("PrecioDia"),
+
+                        Estado =
+                            reader.GetBoolean("Estado"),
+
+                        IdPropietario =
+                            reader.GetInt32("IdPropietario"),
+
+                        Propietario =
+                            reader.GetString("Propietario")
+                    }
+                );
+            }
+
+            return lista;
+        }
+
+public List<InformeInmueble> ObtenerDisponibles(
+    DateTime fechaDesde,
+    DateTime fechaHasta)
+{
+    var lista = new List<InformeInmueble>();
+
+    using var connection =
+        new MySqlConnection(_connectionString);
+
+    var sql = @"
+        SELECT
+            i.IdInmueble,
+            i.Direccion,
+            i.PrecioDia,
+            i.Estado,
+            i.IdPropietario,
+
+            CONCAT(
+                p.Nombre,
+                ' ',
+                p.Apellido
+            ) AS Propietario
+
+        FROM Inmueble i
+
+        INNER JOIN Propietario p
+            ON p.IdPropietario =
+               i.IdPropietario
+
+        WHERE
+            i.Estado = 1
+
+            AND NOT EXISTS
+            (
+                SELECT 1
+
+                FROM Reserva r
+
+                WHERE
+                    r.IdInmueble =
+                        i.IdInmueble
+
+                    AND r.Estado = 1
+
+                    AND r.FechaDesde <=
+                        @fechaHasta
+
+                    AND r.FechaHasta >=
+                        @fechaDesde
+            )
+
+        ORDER BY
+            i.Direccion ASC;
+    ";
+
+    using var command =
+        new MySqlCommand(sql, connection);
+
+    command.Parameters.AddWithValue(
+        "@fechaDesde",
+        fechaDesde
+    );
+
+    command.Parameters.AddWithValue(
+        "@fechaHasta",
+        fechaHasta
+    );
+
+    connection.Open();
+
+    using var reader =
+        command.ExecuteReader();
+
+    while (reader.Read())
+    {
+        lista.Add(
+            new InformeInmueble
+            {
+                IdInmueble =
+                    reader.GetInt32(
+                        "IdInmueble"
+                    ),
+
+                Direccion =
+                    reader.GetString(
+                        "Direccion"
+                    ),
+
+                PrecioDia =
+                    reader.GetDecimal(
+                        "PrecioDia"
+                    ),
+
+                Estado =
+                    reader.GetBoolean(
+                        "Estado"
+                    ),
+
+                IdPropietario =
+                    reader.GetInt32(
+                        "IdPropietario"
+                    ),
+
+                Propietario =
+                    reader.GetString(
+                        "Propietario"
+                    )
+            }
+        );
+    }
+
+    return lista;
+}
+
+
     }
 }

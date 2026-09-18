@@ -2,6 +2,18 @@
 
 @{
     ViewData["Title"] = "Listado de Inquilinos";
+
+    string buscar =
+        ViewBag.Buscar?.ToString() ?? "";
+
+    int paginaActual =
+        ViewBag.PaginaActual ?? 1;
+
+    int totalPaginas =
+        ViewBag.TotalPaginas ?? 0;
+
+    int totalRegistros =
+        ViewBag.TotalRegistros ?? 0;
 }
 
 <h2>Inquilinos</h2>
@@ -9,44 +21,206 @@
 @if (TempData["Mensaje"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show">
+
         @TempData["Mensaje"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+        </button>
+
     </div>
 }
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Crear Nuevo Inquilino</a>
+    <a asp-action="Create"
+       class="btn btn-primary">
+        Crear Nuevo Inquilino
+    </a>
 </p>
 
-<table class="table table-striped table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>DNI</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Dni</td>
-                <td>@item.Nombre</td>
-                <td>@item.Apellido</td>
-                <td>@item.Email</td>
-                <td>@item.Telefono</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-info">Detalles</a>
-                    <a asp-action="Edit" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-warning">Editar</a>
-                    @if (User.IsInRole("Administrador"))
-                    {
-                        <a asp-action="Delete" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-danger">Eliminar</a>
-                    }
+<form asp-action="Index"
+      method="get"
+      class="row g-2 mb-3">
 
+    <div class="col-md-6">
+
+        <input type="text"
+               name="buscar"
+               value="@buscar"
+               class="form-control"
+               placeholder="Buscar por DNI, nombre, apellido, email, teléfono o dirección..." />
+
+    </div>
+
+    <div class="col-auto">
+
+        <button type="submit"
+                class="btn btn-primary">
+            Buscar
+        </button>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(buscar))
+    {
+        <div class="col-auto">
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+                Limpiar
+            </a>
+
+        </div>
+    }
+
+</form>
+
+<div class="alert alert-secondary py-2">
+
+    @if (string.IsNullOrWhiteSpace(buscar))
+    {
+        <span>
+            Total de inquilinos:
+            <strong>@totalRegistros</strong>
+        </span>
+    }
+    else
+    {
+        <span>
+            Resultados para
+            <strong>"@buscar"</strong>:
+            <strong>@totalRegistros</strong>
+        </span>
+    }
+
+</div>
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+
+        <table class="table table-striped table-hover">
+
+            <thead class="table-dark">
+
+                <tr>
+                    <th>DNI</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Acciones</th>
                 </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>@item.Dni</td>
+                        <td>@item.Nombre</td>
+                        <td>@item.Apellido</td>
+                        <td>@item.Email</td>
+                        <td>@item.Telefono</td>
+
+                        <td>
+
+                            <a asp-action="Details"
+                               asp-route-id="@item.IdInquilino"
+                               class="btn btn-sm btn-info">
+                                Detalles
+                            </a>
+
+                            <a asp-action="Edit"
+                               asp-route-id="@item.IdInquilino"
+                               class="btn btn-sm btn-warning">
+                                Editar
+                            </a>
+
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <a asp-action="Delete"
+                                   asp-route-id="@item.IdInquilino"
+                                   class="btn btn-sm btn-danger">
+                                    Eliminar
+                                </a>
+                            }
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+
+        No se encontraron inquilinos
+        que coincidan con la búsqueda.
+
+    </div>
+}
+
+@if (totalPaginas > 1)
+{
+    <nav aria-label="Paginación de inquilinos">
+
+        <ul class="pagination">
+
+            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pagina="@(paginaActual - 1)"
+                   asp-route-buscar="@buscar">
+                    Anterior
+                </a>
+
+            </li>
+
+            @for (int i = 1; i <= totalPaginas; i++)
+            {
+                <li class="page-item @(i == paginaActual ? "active" : "")">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pagina="@i"
+                       asp-route-buscar="@buscar">
+                        @i
+                    </a>
+
+                </li>
             }
-        </tbody>
-    </table>
+
+            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pagina="@(paginaActual + 1)"
+                   asp-route-buscar="@buscar">
+                    Siguiente
+                </a>
+
+            </li>
+
+        </ul>
+
+    </nav>
+
+    <p class="text-muted">
+        Página
+        <strong>@paginaActual</strong>
+        de
+        <strong>@totalPaginas</strong>
+    </p>
+}

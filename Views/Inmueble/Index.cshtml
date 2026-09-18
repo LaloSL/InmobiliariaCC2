@@ -5,6 +5,18 @@
 
     bool estaLogueado =
         User.Identity?.IsAuthenticated == true;
+
+    string buscar =
+        ViewBag.Buscar?.ToString() ?? "";
+
+    int paginaActual =
+        ViewBag.PaginaActual ?? 1;
+
+    int totalPaginas =
+        ViewBag.TotalPaginas ?? 0;
+
+    int totalRegistros =
+        ViewBag.TotalRegistros ?? 0;
 }
 
 <h2>Listado de Inmuebles</h2>
@@ -14,100 +26,235 @@
     <div class="alert alert-success alert-dismissible fade show">
         @TempData["Mensaje"]
 
-        <button type="button" class="btn-close" data-bs-dismiss="alert">
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
         </button>
     </div>
 }
 
+<div class="d-flex justify-content-between align-items-center mb-3">
 
-<p>
+    <div>
+        @if (User.IsInRole("Administrador") ||
+             User.IsInRole("Empleado"))
+        {
+            <a asp-action="Create"
+               class="btn btn-primary">
+                Registrar Nuevo Inmueble
+            </a>
+        }
 
-    @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
-    {
-        <a asp-action="Create" class="btn btn-primary">
-            Registrar Nuevo Inmueble
+        <a asp-action="BuscarDisponibles"
+           class="btn btn-outline-info">
+            Buscar Disponibles
         </a>
+    </div>
+
+</div>
+
+<form asp-action="Index"
+      method="get"
+      class="row g-2 mb-3">
+
+    <div class="col-md-6">
+
+        <input type="text"
+               name="buscar"
+               value="@buscar"
+               class="form-control"
+               placeholder="Buscar por dirección, tipo o propietario..." />
+
+    </div>
+
+    <div class="col-auto">
+
+        <button type="submit"
+                class="btn btn-primary">
+            Buscar
+        </button>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(buscar))
+    {
+        <div class="col-auto">
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+                Limpiar
+            </a>
+
+        </div>
     }
 
-    <a asp-action="BuscarDisponibles" class="btn btn-outline-info">
-        🔍 Buscar Disponibles
-    </a>
+</form>
 
-</p>
+<div class="alert alert-secondary py-2">
 
+    @if (string.IsNullOrWhiteSpace(buscar))
+    {
+        <span>
+            Total de inmuebles:
+            <strong>@totalRegistros</strong>
+        </span>
+    }
+    else
+    {
+        <span>
+            Resultados para
+            <strong>"@buscar"</strong>:
+            <strong>@totalRegistros</strong>
+        </span>
+    }
 
-<table class="table table-striped table-hover">
+</div>
 
-    <thead class="table-dark">
+@if (Model.Any())
+{
+    <table class="table table-striped table-hover">
 
-        <tr>
+        <thead class="table-dark">
 
-            <th>Dirección</th>
-
-            <th>Tipo</th>
-
-            <th>Cupo</th>
-
-            <th>Precio / Día</th>
-
-
-            @if (estaLogueado)
-            {
-                <th>Propietario</th>
-
-                <th>Acciones</th>
-            }
-
-        </tr>
-
-    </thead>
-
-
-    <tbody>
-
-        @foreach (var item in Model)
-        {
             <tr>
 
-                <td>
-                    @item.Direccion
-                </td>
+                <th>Dirección</th>
 
-                <td>
-                    @item.Tipo?.Nombre
-                </td>
+                <th>Tipo</th>
 
-                <td>
-                    @item.Cupo pnas.
-                </td>
+                <th>Cupo</th>
 
-                <td>
-                    $@item.PrecioDia
-                </td>
-
+                <th>Precio / Día</th>
 
                 @if (estaLogueado)
                 {
-                    <td>
-                        @item.Propietario?.Nombre
-                        @item.Propietario?.Apellido
-                    </td>
+                    <th>Propietario</th>
 
-
-                    <td>
-
-                        <a asp-action="Details" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-info">
-
-                            Detalles
-
-                        </a>
-
-                    </td>
+                    <th>Acciones</th>
                 }
 
             </tr>
-        }
 
-    </tbody>
+        </thead>
 
-</table>
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+
+                    <td>
+                        @item.Direccion
+                    </td>
+
+                    <td>
+                        @item.Tipo?.Nombre
+                    </td>
+
+                    <td>
+                        @item.Cupo pnas.
+                    </td>
+
+                    <td>
+                        @item.PrecioDia.ToString(
+                            "C",
+                            new System.Globalization.CultureInfo("es-AR")
+                        )
+                    </td>
+
+                    @if (estaLogueado)
+                    {
+                        <td>
+                            @item.Propietario?.Nombre
+                            @item.Propietario?.Apellido
+                        </td>
+
+                        <td>
+
+                            <a asp-action="Details"
+                               asp-route-id="@item.IdInmueble"
+                               class="btn btn-sm btn-info">
+                                Detalles
+                            </a>
+
+                        </td>
+                    }
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+}
+else
+{
+    <div class="alert alert-warning">
+
+        No se encontraron inmuebles
+        que coincidan con la búsqueda.
+
+    </div>
+}
+
+@if (totalPaginas > 1)
+{
+    <nav aria-label="Paginación de inmuebles">
+
+        <ul class="pagination">
+
+            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pagina="@(paginaActual - 1)"
+                   asp-route-buscar="@buscar">
+
+                    Anterior
+
+                </a>
+
+            </li>
+
+            @for (int i = 1; i <= totalPaginas; i++)
+            {
+                <li class="page-item @(i == paginaActual ? "active" : "")">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pagina="@i"
+                       asp-route-buscar="@buscar">
+
+                        @i
+
+                    </a>
+
+                </li>
+            }
+
+            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pagina="@(paginaActual + 1)"
+                   asp-route-buscar="@buscar">
+
+                    Siguiente
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </nav>
+
+    <p class="text-muted">
+
+        Página
+        <strong>@paginaActual</strong>
+        de
+        <strong>@totalPaginas</strong>
+
+    </p>
+}
